@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Password;
 
 class CheckoutController extends Controller
 {
@@ -38,7 +42,6 @@ class CheckoutController extends Controller
         Stripe::setApiKey(config('services.stripe.secret'));
 
         $sessionId = $request->get('session_id');
-
         if (! $sessionId) {
             return inertia('checkout-cancel');
         }
@@ -48,23 +51,34 @@ class CheckoutController extends Controller
             'expand' => ['line_items.data.price'],
         ]);
 
-
-        // Ensure payment completed
         if ($session->payment_status !== 'paid') {
             return inertia('checkout-cancel');
         }
 
-        // Get purchased price_id
         $priceId = $session->line_items->data[0]->price->id ?? null;
-        $user = $request->user();
-        
         if (! $priceId) {
             Log::error('Stripe session missing price_id');
             return inertia('checkout-cancel');
         }
 
-        // Grant access
-        $this->grantEntitlements($request->user(), $priceId);
+        $email = $session->customer_details->email ?? null;
+        if (! $email) {
+            Log::error('Stripe session missing customer email');
+            return inertia('checkout-cancel');
+        }
+
+        $user = User::firstOrCreate(
+            ['email' => $email],
+            [
+                'name' => $email,
+                'password' => Hash::make(Str::random(16)),
+            ]
+        );
+
+        $this->grantEntitlements($user, $priceId);
+
+        // Optional: send password setup link
+        Password::sendResetLink(['email' => $email]);
 
         return inertia('checkout-success');
     }
