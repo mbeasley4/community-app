@@ -1,0 +1,24 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class communityTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_guests_are_redirected_to_the_login_page()
+    {
+        $this->get(route('community'))->assertRedirect(route('login'));
+    }
+
+    public function test_authenticated_users_can_visit_the_community()
+    {
+        $this->actingAs($user = User::factory()->create());
+
+        $this->get(route('community'))->assertOk();
+    }
+}

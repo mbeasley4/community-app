@@ -1,0 +1,49 @@
+<?php
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EventsController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\RecipesController;
+use App\Http\Controllers\YouTubeController;
+use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\CommunityRecipeController;
+use App\Http\Controllers\Api\LectureProgressController;
+
+// ->middleware('auth:sanctum');
+Route::get('/youtube/playlist/{playlistId}', [YouTubeController::class, 'playlist']);
+
+Route::middleware('auth')->group(function () {
+    Route::get('/courses', function () {
+        return \App\Models\Course::select('id','title','description','image')->get();
+    });
+    
+    Route::get('/courses/{course}', [CourseController::class, 'show']);
+    
+    Route::post('/lectures/{lecture}/progress', [LectureProgressController::class, 'save']);
+    Route::post('/lectures/{lecture}/complete', [LectureProgressController::class, 'complete']);
+    // Get all events for FullCalendar (FullCalendar expects a JSON feed)
+    Route::get('/events', [EventsController::class, 'index']);
+
+    // Create a new event
+    Route::post('/events', [EventsController::class, 'store']);
+
+    // Update an event (FullCalendar can trigger this with eventDrop or similar interactions)
+    Route::put('/events/{event}', [EventsController::class, 'update']);
+
+    // Delete an event
+    Route::delete('/events/{event}', [EventsController::class, 'destroy']);
+    /* Recipes */
+    Route::get('/recipes', [RecipesController::class, 'index']);
+    
+    Route::get('/community-recipes', [CommunityRecipeController::class, 'index']);
+    Route::post('/community-recipes', [CommunityRecipeController::class, 'store']);
+
+    
+    /* POSTS */
+    Route::get('/posts', [PostController::class, 'index']);
+    Route::post('/posts', [PostController::class, 'store']);
+    Route::post('/posts/{post}/hide', [PostController::class, 'hide']);
+    Route::post('/posts/{post}/react', [PostController::class, 'toggle']); 
+    Route::post('/posts/{post}/comments', [PostController::class, 'comment']);
+    Route::delete('/comments/{comment}', [PostController::class, 'hideComment']);
+
+});
