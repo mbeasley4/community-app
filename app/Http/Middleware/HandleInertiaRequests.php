@@ -49,7 +49,27 @@ class HandleInertiaRequests extends Middleware
             ],
 
             'auth' => [
-                'user' => fn () => $request->user() ? $request->user()->loadCount(['posts', 'recipes']) : null,
+                'user' => fn () => $request->user()
+                    ? array_merge(
+                        $request->user()
+                            ->loadCount(['posts', 'recipes'])
+                            ->only([
+                                'id',
+                                'name',
+                                'email',
+                                'avatar',
+                                'avatar_url',
+                                'email_verified_at',
+                                'created_at',
+                                'updated_at',
+                                'posts_count',
+                                'recipes_count',
+                            ]),
+                        [
+                            'roles' => $request->user()->getRoleNames(),
+                        ]
+                    )
+                    : null,
 
                 'notificationCount' => fn () =>
                     $request->user()

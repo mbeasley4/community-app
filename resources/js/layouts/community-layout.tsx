@@ -2,11 +2,14 @@ import React from 'react'
 import TopNavigation from '@/components/top-navigation';
 import RightSidebar from '@/components/right-sidebar';
 import LeftSidebar from '@/components/left-sidebar';
+import { Advertisement } from '../types/advertisement';
 
 export default function CommunityLayout({
+  ads,
   children,
 }: {
   children: React.ReactNode
+  ads: Advertisement[]
 }) {
   return (
     <div className="min-h-screen bg-gray-100">
@@ -25,7 +28,8 @@ export default function CommunityLayout({
           {/* Right Sidebar (1/4) */}
           <aside className="col-span-12 md:col-span-3">
               <div className="rounded-xl border bg-white px-3">
-                <RightSidebar/>
+                {/* Ads sidebar */}
+                <RightSidebar ads={ads} />
               </div>
           </aside>
         </div>

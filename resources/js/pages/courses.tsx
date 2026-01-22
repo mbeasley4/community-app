@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import CommunityLayout from '@/layouts/community-layout'
+import { Advertisement } from '@/types/advertisement'
 
 type Course = {
   id: number
@@ -8,7 +9,7 @@ type Course = {
   image?: string
 }
 
-export default function CourseIndex() {
+export default function CourseIndex({ads,}:{ads: Advertisement[] }) {
   const [courses, setCourses] = useState<Course[]>([])
 
   useEffect(() => {
@@ -18,7 +19,7 @@ export default function CourseIndex() {
   }, [])
 
   return (
-    <CommunityLayout>
+    <CommunityLayout ads={ads}>
       <div className="max-w-6xl mx-auto px-6">
         <h1 className="text-3xl font-semibold mb-3">Courses</h1>
 

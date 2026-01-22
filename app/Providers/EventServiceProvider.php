@@ -5,9 +5,9 @@ use Illuminate\Support\ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {
-    protected $listen = [
-        \Illuminate\Auth\Events\Login::class => [
-            \App\Listeners\UpdateLastLogin::class,
+   protected $listen = [
+        Login::class => [
+            UpdateLastLoginAt::class,
         ],
     ];
 }

@@ -4,9 +4,12 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Models\Course;
+use App\Models\Advertisement;
 
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\AdvertisementController;
 
 Route::get('/', function () {
     return Inertia::render('home', [
@@ -24,7 +27,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('community', function () {
-        return Inertia::render('community');
+        return Inertia::render('community', [
+        'ads' => Advertisement::where('is_active', true)
+                    ->orderBy('position')
+                    ->get()
+    ]);
     })->name('community');
 
     Route::get('/recipes', function () {
@@ -32,7 +39,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('recipes');
 
     Route::get('/events', function () {
-        return Inertia::render('events');
+        return Inertia::render('events', [
+        'ads' => Advertisement::where('is_active', true)
+                    ->orderBy('position')
+                    ->get()
+    ]);
     })->name('events');
 
     Route::get('/videos', function () {
@@ -40,7 +51,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('videos');
 
     Route::get('/courses', function () {
-        return Inertia::render('courses');
+        return Inertia::render('courses', [
+        'ads' => Advertisement::where('is_active', true)
+                    ->orderBy('position')
+                    ->get()
+    ]);
     })->name('courses');
     
     Route::get('/courses/{course}', function (Course $course) {
@@ -85,5 +100,30 @@ Route::get('/checkout/error', function () {
 Route::get('/checkout/cancel', function () {
     return inertia('checkout-cancel');
 })->name('checkout.error');
+
+
+/**
+ * ADMIN ROUTES
+ */
+// routes/web.php
+
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->group(function () {
+
+    Route::get('/users', [UserManagementController::class, 'index'])
+        ->name('admin.users');
+    Route::get('/users/{user}/edit', [UserManagementController::class, 'edit'])
+        ->name('admin.users.edit');
+    Route::put('/users/{user}', [UserManagementController::class, 'update']);
+    Route::put('/users/{user}/password', [UserManagementController::class, 'updatePassword']);
+
+    Route::get('/ads', [AdvertisementController::class, 'index']);
+    Route::get('/ads/create', [AdvertisementController::class, 'create']);
+    Route::post('/ads', [AdvertisementController::class, 'store']);
+    Route::get('/ads/{advertisement}/edit', [AdvertisementController::class, 'edit']);
+    Route::put('/ads/{advertisement}', [AdvertisementController::class, 'update']);
+    Route::delete('/ads/{advertisement}', [AdvertisementController::class, 'destroy']);
+});
 
 require __DIR__.'/settings.php';

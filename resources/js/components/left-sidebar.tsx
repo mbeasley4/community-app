@@ -1,5 +1,6 @@
 import Fit30DayCounter from "./fit30-day-counter";
 import ProfileSidebar from "./profile-sidebar";
+import AdminMenu from "./admin-menu"
 
 export default function LeftSidebar() {
     return (
@@ -16,6 +17,9 @@ export default function LeftSidebar() {
                 <div className="rounded-xl border bg-white mb-2 p-4">
                     <ProfileSidebar />
                 </div>
+                {/* Admin-only menu */}
+                <AdminMenu />
+                
             </aside>
         </>
     );
