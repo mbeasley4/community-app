@@ -78,6 +78,10 @@ class HandleInertiaRequests extends Middleware
                             ->count()
                         : 0,
             ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error'   => fn () => $request->session()->get('error'),
+            ],
 
             'sidebarOpen' =>
                 ! $request->hasCookie('sidebar_state')

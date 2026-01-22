@@ -40,7 +40,7 @@ class CheckoutController extends Controller
         $sessionId = $request->get('session_id');
 
         if (! $sessionId) {
-            return inertia('CheckoutCancel');
+            return inertia('checkout-cancel');
         }
 
         $session = StripeSession::retrieve([
@@ -51,7 +51,7 @@ class CheckoutController extends Controller
 
         // Ensure payment completed
         if ($session->payment_status !== 'paid') {
-            return inertia('CheckoutCancel');
+            return inertia('checkout-cancel');
         }
 
         // Get purchased price_id
@@ -59,18 +59,18 @@ class CheckoutController extends Controller
 
         if (! $priceId) {
             Log::error('Stripe session missing price_id');
-            return inertia('CheckoutCancel');
+            return inertia('checkout-cancel');
         }
 
         // Grant access
         $this->grantEntitlements($request->user(), $priceId);
 
-        return inertia('CheckoutSuccess');
+        return inertia('checkout-success');
     }
 
     public function cancel()
     {
-        return inertia('CheckoutCancel');
+        return inertia('checkout-cancel');
     }
 
     /**

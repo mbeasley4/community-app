@@ -10,6 +10,8 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\AdvertisementController;
+use App\Http\Controllers\Admin\CourseController;
+use App\Http\Controllers\Admin\LectureController;
 
 Route::get('/', function () {
     return Inertia::render('home', [
@@ -87,19 +89,13 @@ Route::get('/img', function (\Illuminate\Http\Request $request) {
         ->header('Cache-Control', 'public, max-age=86400');
 });
 
-Route::post('/checkout', [CheckoutController::class, 'create']);
+Route::post('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
 
-Route::get('/checkout/success', function () {
-    return inertia('checkout-success');
-})->name('checkout.success');
+Route::get('/checkout/success', [CheckoutController::class, 'success'])
+    ->name('checkout.success');
 
-Route::get('/checkout/error', function () {
-    return inertia('checkout-error');
-})->name('checkout.error');
-
-Route::get('/checkout/cancel', function () {
-    return inertia('checkout-cancel');
-})->name('checkout.error');
+Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])
+    ->name('checkout.cancel');
 
 
 /**
@@ -110,20 +106,39 @@ Route::get('/checkout/cancel', function () {
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->group(function () {
-
+    
+    // ---- Users ----
     Route::get('/users', [UserManagementController::class, 'index'])
         ->name('admin.users');
     Route::get('/users/{user}/edit', [UserManagementController::class, 'edit'])
         ->name('admin.users.edit');
     Route::put('/users/{user}', [UserManagementController::class, 'update']);
     Route::put('/users/{user}/password', [UserManagementController::class, 'updatePassword']);
-
+    
+    // ---- Ads ----
     Route::get('/ads', [AdvertisementController::class, 'index']);
     Route::get('/ads/create', [AdvertisementController::class, 'create']);
     Route::post('/ads', [AdvertisementController::class, 'store']);
     Route::get('/ads/{advertisement}/edit', [AdvertisementController::class, 'edit']);
     Route::put('/ads/{advertisement}', [AdvertisementController::class, 'update']);
     Route::delete('/ads/{advertisement}', [AdvertisementController::class, 'destroy']);
+
+     // ---- Courses ----
+    Route::get('/courses', [CourseController::class, 'index']);
+    Route::get('/courses/create', [CourseController::class, 'create']);
+    Route::post('/courses', [CourseController::class, 'store']);
+    Route::get('/courses/{course}/edit', [CourseController::class, 'edit']);
+    Route::put('/courses/{course}', [CourseController::class, 'update']);
+    Route::delete('/courses/{course}', [CourseController::class, 'destroy']);
+
+    // ---- Lectures ----
+    Route::get('/courses/{course}/lectures', [LectureController::class, 'index']);
+    Route::get('/courses/{course}/lectures/create', [LectureController::class, 'create']);
+    Route::post('/courses/{course}/lectures', [LectureController::class, 'store']);
+
+    Route::get('/lectures/{lecture}/edit', [LectureController::class, 'edit']);
+    Route::put('/lectures/{lecture}', [LectureController::class, 'update']);
+    Route::delete('/lectures/{lecture}', [LectureController::class, 'destroy']);
 });
 
 require __DIR__.'/settings.php';

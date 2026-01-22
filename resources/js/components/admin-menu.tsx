@@ -31,6 +31,14 @@ export default function AdminMenu() {
             Manage Advertisements
           </Link>
         </li>
+        <li>
+          <Link
+            href="/admin/courses"
+            className="text-orange-600 hover:underline"
+          >
+            Manage Courses
+          </Link>
+        </li>
       </ul>
     </div>
   )

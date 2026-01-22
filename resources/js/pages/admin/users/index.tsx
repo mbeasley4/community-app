@@ -4,7 +4,7 @@ import CommunityLayoutNoRight from '@/layouts/community-layout-no-right'
 export default function UsersIndex({ users }) {
   return (
     <CommunityLayoutNoRight>
-      <div className="max-w-6xl mx-auto p-6">
+        <div className="px-6">
 
         <h1 className="text-2xl font-semibold mb-6">User Management</h1>
 
