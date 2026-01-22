@@ -56,7 +56,8 @@ class CheckoutController extends Controller
 
         // Get purchased price_id
         $priceId = $session->line_items->data[0]->price->id ?? null;
-
+        $user = $request->user();
+        
         if (! $priceId) {
             Log::error('Stripe session missing price_id');
             return inertia('checkout-cancel');
