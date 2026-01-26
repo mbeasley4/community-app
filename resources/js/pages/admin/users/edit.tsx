@@ -136,6 +136,136 @@ export default function UserEdit({ user, roles }) {
         </form>
       </div>
     </div>
+    {/* Purchase History */}
+    <div className="mt-8">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900">
+          Purchase History
+        </h2>
+        <span className="text-sm text-gray-500">
+          {user.purchases.length} total
+        </span>
+      </div>
+
+      {user.purchases.length === 0 && (
+        <div className="rounded border border-dashed border-gray-300 p-4 text-sm text-gray-500">
+          No purchases found for this user.
+        </div>
+      )}
+
+      {user.purchases.map(p => (
+        <div
+          key={p.id}
+          className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="text-sm text-gray-500">
+                {p.purchased_at
+                  ? new Date(p.purchased_at).toLocaleDateString()
+                  : '—'}
+              </div>
+              <div className="text-xs text-gray-400">
+                Session: {p.stripe_session_id}
+              </div>
+            </div>
+
+            <div className="text-right">
+              <div className="text-lg font-semibold">
+                ${(p.amount / 100).toFixed(2)} {p.currency.toUpperCase()}
+              </div>
+
+              <span
+                className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                  p.status === 'paid'
+                    ? 'bg-green-100 text-green-700'
+                    : p.status === 'refunded'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                {p.status}
+              </span>
+            </div>
+          </div>
+
+          {/* Items */}
+          <div className="mt-4">
+            <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Items Purchased
+            </div>
+
+            <div className="space-y-2">
+              {p.items.map(i => (
+                <div
+                  key={i.id}
+                  className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-3 py-2 text-sm"
+                >
+                  <div>
+                    <div className="font-medium capitalize">
+                      {i.product_type}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Price ID: {i.stripe_price_id}
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-sm">
+                      ${(i.unit_amount / 100).toFixed(2)}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Qty: {i.quantity}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Refund Actions */}
+          {p.status === 'paid' && (
+            <div className="mt-4 flex gap-3">
+              {/* Local Mark Refunded */}
+              <form
+                method="post"
+                action={`/admin/purchases/${p.id}/mark-refunded`}
+              >
+                <button
+                  type="submit"
+                  className="rounded border border-orange-300 px-3 py-1 text-xs font-medium text-orange-700 hover:bg-orange-50"
+                >
+                  Mark Refunded
+                </button>
+              </form>
+
+              {/* Stripe Refund */}
+              <form
+                method="post"
+                action={`/admin/purchases/${p.id}/refund-stripe`}
+              >
+                <button
+                  type="submit"
+                  className="rounded border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
+                >
+                  Refund via Stripe
+                </button>
+              </form>
+            </div>
+          )}
+
+          {p.status === 'refunded' && (
+            <div className="mt-3 text-xs font-medium text-red-600">
+              This purchase has been refunded.
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+
+
+
     </CommunityLayoutNoRight>
   )
 }

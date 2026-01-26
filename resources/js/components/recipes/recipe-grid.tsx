@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react'
 import { Recipe, isFit30Recipe } from '@/types/recipes'
 
 type RecipeGridProps = {
@@ -11,7 +12,7 @@ export default function RecipeGrid({ recipes, externalLinks }: RecipeGridProps) 
       {recipes.map(recipe => {
         const Fit30 = isFit30Recipe(recipe)
 
-        // Normalize fields across recipe types
+        // Normalize fields
         const title = Fit30
           ? recipe.title.rendered
           : recipe.title
@@ -22,64 +23,82 @@ export default function RecipeGrid({ recipes, externalLinks }: RecipeGridProps) 
 
         const imageUrl = Fit30
           ? recipe._embedded?.['wp:featuredmedia']?.[0]?.source_url
-          : recipe.image_path || undefined
+          : recipe.image || undefined
 
-        const link = Fit30
-          ? recipe.link
-          : undefined
+        const externalLink = Fit30 ? recipe.link : null
+
+        // Internal community recipe link
+        const internalLink = !Fit30
+          ? `/recipes/${recipe.id}`
+          : null
+
+        // Decide wrapper
+        const Wrapper = ({ children }: { children: React.ReactNode }) => {
+          if (externalLinks && externalLink) {
+            return (
+              <a href={externalLink} target="_blank" rel="noreferrer">
+                {children}
+              </a>
+            )
+          }
+
+          if (internalLink) {
+            return <Link href={internalLink}>{children}</Link>
+          }
+
+          return <>{children}</>
+        }
 
         return (
           <article
             key={recipe.id}
             className="group overflow-hidden rounded-xl border bg-white shadow-sm transition hover:shadow-md"
           >
+            {/* Image */}
             {imageUrl && (
-              externalLinks && link ? (
-                <a href={link} target="_blank" rel="noreferrer">
-                  <img
-                    src={
-                      Fit30
-                        ? `/img?url=${encodeURIComponent(imageUrl)}`
-                        : imageUrl
-                    }
-                    alt={title}
-                    className="h-50 w-full object-cover transition group-hover:scale-105"
-                  />
-                </a>
-              ) : (
+              <Wrapper>
                 <img
-                  src={imageUrl}
+                  src={
+                    Fit30
+                      ? `/img?url=${encodeURIComponent(imageUrl)}`
+                      : imageUrl
+                  }
                   alt={title}
-                  className="h-50 w-full object-cover"
+                  className="h-50 w-full object-cover transition group-hover:scale-105"
                 />
-              )
+              </Wrapper>
             )}
 
             <div className="p-4 space-y-3">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {title}
-              </h3>
+              {/* Title */}
+              <Wrapper>
+                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-orange-600 transition">
+                  {title}
+                </h3>
+              </Wrapper>
 
+              {/* Excerpt */}
               <div
                 className="text-sm text-gray-600 line-clamp-3"
                 dangerouslySetInnerHTML={{ __html: excerpt ?? '' }}
               />
+
+              {/* Meta */}
               {!Fit30 && (
                 <div className="text-xs text-gray-500">
                   Posted
-                  {recipe.user?.name
-                    ? ` by ${recipe.user.name}`
-                    : ''} 
+                  {recipe.user?.name ? ` by ${recipe.user.name}` : ''}
                   {' '}on {new Date(recipe.created_at).toLocaleDateString()}
                 </div>
               )}
 
-              {externalLinks && link && (
+              {/* External link button (Fit30 only) */}
+              {externalLinks && externalLink && (
                 <a
-                  href={link}
+                  href={externalLink}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-orange-600 hover:text-orange-800"
+                  className="inline-flex items-center text-sm font-medium text-orange-600 hover:text-orange-800"
                 >
                   View recipe →
                 </a>

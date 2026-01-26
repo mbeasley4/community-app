@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import RecipeGrid from './recipe-grid'
-import SubmitRecipeForm from './submit-recipe-form'
+import SubmitRecipeButton from './submit-recipe-button' 
 import { CommunityRecipe } from '@/types/recipes'
 
 export default function CommunityRecipes() {
@@ -34,7 +34,7 @@ export default function CommunityRecipes() {
 
   return (
     <div className="space-y-8">
-      <SubmitRecipeForm onSubmitted={loadRecipes} />
+      <SubmitRecipeButton onSubmitted={loadRecipes} onClose={undefined} />
 
       {loading && (
         <div className="grid grid-cols-1 gap-6 animate-pulse">

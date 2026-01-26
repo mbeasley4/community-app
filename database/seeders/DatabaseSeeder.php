@@ -24,9 +24,16 @@ class DatabaseSeeder extends Seeder
             ]
         );
     }*/
-
+    /*
     public function run(): void {
         $this->call(FeedSeeder::class);
     }
+    */
+    
+    public function run(): void
+    {
+        $this->call(PurchaseSeeder::class);
+    }
+
 
 }

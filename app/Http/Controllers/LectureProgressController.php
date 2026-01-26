@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lecture;
@@ -16,23 +16,34 @@ class LectureProgressController extends Controller
 
         $user = $request->user();
 
+        $seconds  = (int) $request->watched_seconds;
+        $duration = (int) $lecture->duration_seconds;
+
+        // Mark completed if within last 5 seconds
+        $completed = $duration > 0 && $seconds >= ($duration - 5);
+
         $user->lectures()->syncWithoutDetaching([
             $lecture->id => [
-                'watched_seconds' => $request->watched_seconds,
-                // do NOT set completed_at here automatically
+                'watched_seconds' => $seconds,
+                'completed_at'    => $completed ? now() : null,
             ],
         ]);
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success'   => true,
+            'completed'=> $completed,
+        ]);
     }
 
+    // Manual fallback button remains unchanged
     public function complete(Request $request, Lecture $lecture)
     {
         $user = $request->user();
 
         $user->lectures()->syncWithoutDetaching([
             $lecture->id => [
-                'completed_at' => now(),
+                'watched_seconds' => $lecture->duration_seconds ?? 0,
+                'completed_at'    => now(),
             ],
         ]);
 

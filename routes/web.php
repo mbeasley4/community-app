@@ -12,6 +12,12 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\AdvertisementController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\LectureController;
+use App\Http\Controllers\Admin\VideoController as AdminVideoController;
+use App\Http\Controllers\Admin\RecipeModerationController;
+use App\Http\Controllers\Admin\EventsController as AdminEventsController;
+
+
+
 
 Route::get('/', function () {
     return Inertia::render('home', [
@@ -28,6 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 */
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    /** Community */
     Route::get('community', function () {
         return Inertia::render('community', [
         'ads' => Advertisement::where('is_active', true)
@@ -35,11 +42,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     ->get()
     ]);
     })->name('community');
-
+    /** Recipes */
     Route::get('/recipes', function () {
-        return Inertia::render('recipes');
+        return Inertia::render('recipes/index');
     })->name('recipes');
+   Route::get('/recipes/{recipe}', function () {
+        return inertia('recipes/show');
+    });
 
+
+    /** Events */
     Route::get('/events', function () {
         return Inertia::render('events', [
         'ads' => Advertisement::where('is_active', true)
@@ -139,6 +151,29 @@ Route::middleware(['auth', 'role:admin'])
     Route::get('/lectures/{lecture}/edit', [LectureController::class, 'edit']);
     Route::put('/lectures/{lecture}', [LectureController::class, 'update']);
     Route::delete('/lectures/{lecture}', [LectureController::class, 'destroy']);
+
+    // ---- Videos ----
+    Route::resource('videos', AdminVideoController::class)
+        ->except(['show']);
+    Route::get('/videos', [AdminVideoController::class, 'index']);
+    Route::get('/videos/{video}/create', [AdminVideoController::class, 'create']);
+    Route::get('/videos/{videos}/edit', [AdminVideoController::class, 'edit']);
+
+    // ---- Recipes ----
+    Route::get('/recipes', [RecipeModerationController::class, 'index']);
+    Route::get('recipes/{recipe}', [RecipeModerationController::class, 'show']);
+    Route::post('recipes/{recipe}/approve', [RecipeModerationController::class, 'approve']);
+    Route::post('recipes/{recipe}/reject', [RecipeModerationController::class, 'reject']);
+    Route::delete('recipes/{recipe}', [RecipeModerationController::class, 'destroy']);
+
+    // ---- Events ----
+    Route::get('/events', [AdminEventsController::class, 'index']);
+    Route::get('/events/create', [AdminEventsController::class, 'create']);
+    Route::post('/events', [AdminEventsController::class, 'store']);
+    Route::get('/events/{event}/edit', [AdminEventsController::class, 'edit']);
+    Route::put('/events/{event}', [AdminEventsController::class, 'update']);
+    Route::delete('/events/{event}', [AdminEventsController::class, 'destroy']);
 });
+
 
 require __DIR__.'/settings.php';

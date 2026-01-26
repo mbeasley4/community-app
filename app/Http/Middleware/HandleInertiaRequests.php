@@ -47,12 +47,15 @@ class HandleInertiaRequests extends Middleware
                 'message' => trim($message),
                 'author' => trim($author)
             ],
-
+            'ads' => fn () => \App\Models\Advertisement::where('is_active', true)->get(),
             'auth' => [
                 'user' => fn () => $request->user()
                     ? array_merge(
                         $request->user()
-                            ->loadCount(['posts', 'recipes'])
+                             ->loadCount([
+                                'visiblePosts as posts_count' => fn ($q) => $q->where('hidden', false),
+                                'recipes'
+                            ])
                             ->only([
                                 'id',
                                 'name',

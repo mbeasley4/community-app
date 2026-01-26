@@ -11,57 +11,91 @@ class CommunityRecipeController extends Controller
 {
     public function index()
     {
-       return response()->json([
-            'data' => CommunityRecipe::where('approved', true)
-                ->with('user:id,name')  // eager load poster
-                ->latest()
-                ->get()
-        ]);
+        $recipes = CommunityRecipe::where('status', 'approved')
+            ->with('user:id,name,avatar')
+            ->latest()
+            ->paginate(12);
+
+        // Transform each item but keep pagination structure
+        $recipes->getCollection()->transform(function ($recipe) {
+            return [
+                'id' => $recipe->id,
+                'title' => $recipe->title,
+                'excerpt' => $recipe->excerpt,
+                'ingredients' => $recipe->ingredients ?? [],
+                'instructions' => $recipe->instructions ?? [],
+                'image' => $recipe->image_path
+                    ? asset('storage/' . $recipe->image_path)
+                    : null,
+                'user' => [
+                    'id' => $recipe->user->id,
+                    'name' => $recipe->user->name,
+                    'avatar' => $recipe->user->avatar
+                        ? asset('storage/' . $recipe->user->avatar)
+                        : null
+                ],
+                'created_at' => $recipe->created_at->toDateTimeString()
+            ];
+        });
+
+        return response()->json($recipes);
     }
 
     public function store(Request $request)
     {
-        // ---- Validation ----
-        $request->validate([
-            'title'   => ['required', 'string', 'max:120', new NoProfanity],
-            'excerpt' => ['required', 'string', 'max:500', new NoProfanity],
-            'image'   => ['nullable', 'image', 'max:2048'], // 2MB
+        $data = $request->validate([
+            'title'        => ['required','string','max:255'],
+            'excerpt'      => ['required','string','max:1000'],
+            'ingredients'  => ['nullable'],
+            'instructions'=> ['nullable'],
+            'image'        => ['nullable','image','max:2048'],
         ]);
 
-        $imagePath = null;
-
-        // ---- Image upload ----
+        $path = null;
         if ($request->hasFile('image')) {
-
             $path = $request->file('image')
-                ->store('community-recipes', 'public');
-
-            $absolutePath = storage_path('app/public/'.$path);
-
-            if (! ImageModeration::imageIsSafe($absolutePath)) {
-                Storage::disk('public')->delete($path);
-
-                return response()->json([
-                    'errors' => [
-                        'image' => ['Image violates content guidelines.']
-                    ]
-                ], 422);
-            }
-
-            $imagePath = "/storage/".$path;
+                ->store('community/recipes', 'public');
         }
 
-
-        // ---- Save recipe (moderation queue) ----
         CommunityRecipe::create([
-            'title'      => $request->title,
-            'excerpt'    => $request->excerpt,
-            'image_path' => $imagePath,
-            'approved'   => false,
-            'user_id'    => auth()->id(), // null if guest
+            'user_id'      => auth()->id(),
+            'title'        => $data['title'],
+            'excerpt'      => $data['excerpt'],
+            'ingredients'  => json_decode($data['ingredients'] ?? '[]', true),
+            'instructions'=> json_decode($data['instructions'] ?? '[]', true),
+            'image_path'   => $path,
+            'status'       => 'pending'
         ]);
 
-
-        return response()->json(['ok' => true]);
+        return response()->json(['success' => true]);
     }
+
+    public function show(CommunityRecipe $recipe)
+    {
+        // Only allow approved recipes to be viewed
+        abort_unless($recipe->status === 'approved', 404);
+
+        $recipe->load('user:id,name,avatar');
+
+        return response()->json([
+            'id' => $recipe->id,
+            'title' => $recipe->title,
+            'excerpt' => $recipe->excerpt,
+            'ingredients' => $recipe->ingredients ?? [],
+            'instructions' => $recipe->instructions ?? [],
+            'image' => $recipe->image_path
+                ? asset('storage/' . $recipe->image_path)
+                : null,
+            'user' => [
+                'id' => $recipe->user->id,
+                'name' => $recipe->user->name,
+                'avatar' => $recipe->user->avatar
+                    ? asset('storage/' . $recipe->user->avatar)
+                    : null
+            ],
+            'created_at' => $recipe->created_at->toDateTimeString()
+        ]);
+    }
+
+
 }

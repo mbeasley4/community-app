@@ -9,6 +9,11 @@ class Event extends Model
         'title',
         'description',
         'start_at',
-        'end_at'
-    ];
+        'end_at',
+        'event_url',
+        'badge',
+        'status',
+        'timezone'
+        ];
+
 }

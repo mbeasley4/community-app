@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -56,15 +55,19 @@ class User extends Authenticatable
     }
 
     // User has many posts
-    public function posts(): HasMany
+    public function visiblePosts(): HasMany
     {
-        return $this->hasMany(Post::class);
+        return $this->hasMany(Post::class)->where('hidden', false);
     }
 
     // User belongs to many groups
     public function groups(): BelongsToMany
     {
         return $this->belongsToMany(Group::class);
+    }
+    public function latestPurchase()
+    {
+        return $this->hasOne(Purchase::class)->latestOfMany('purchased_at');
     }
 
     public function lectures() 
@@ -99,7 +102,12 @@ class User extends Authenticatable
 
     public function recipes()
     {
-        return $this->hasMany(\App\Models\CommunityRecipe::class);
+        return $this->hasMany(CommunityRecipe::class);
+    }
+
+    public function purchases(): HasMany
+    {
+        return $this->hasMany(Purchase::class);
     }
 
 }

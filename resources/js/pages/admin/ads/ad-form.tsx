@@ -1,17 +1,30 @@
+import { Advertisement } from '@/types/advertisement'
 import { useForm } from '@inertiajs/react'
 
-export default function AdForm({ ad }) {
+type Props = {
+  ad: Advertisement
+}
 
-  const form = useForm({
-    title: ad?.title ?? '',
-    link_url: ad?.link_url ?? '',
-    position: ad?.position ?? 0,
-    is_active: ad?.is_active ?? true,
-    image: null,
-  })
+export default function AdForm({ ad }: Props) {
 
-  function submit(e) {
-    e.preventDefault()
+  const form = useForm<{
+  title: string
+  link_url: string
+  position: number
+  is_active: boolean
+  image: File | null
+  length: number
+}>({
+  title: ad?.title ?? '',
+  link_url: ad?.link_url ?? '',
+  position: ad?.position ?? 0,
+  is_active: ad?.is_active ?? true,
+  image: null,
+  length: 0
+})
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault() 
 
     if (ad) {
       form.post(`/admin/ads/${ad.id}?_method=PUT`)
@@ -56,7 +69,12 @@ export default function AdForm({ ad }) {
 
       <input
         type="file"
-        onChange={e => form.setData('image', e.target.files[0])}
+        onChange={e => {
+          const file = e.target.files?.[0]
+          if (file) {
+            form.setData('image', file)
+          }
+        }}
       />
 
       <button className="bg-orange-500 text-white px-4 py-2 rounded">

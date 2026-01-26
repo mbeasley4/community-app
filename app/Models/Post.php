@@ -9,7 +9,7 @@ class Post extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'body'];
+    protected $fillable = ['user_id', 'body', 'images','hidden'];
     protected $casts = [
         'reaction_summary' => 'array',
     ];
@@ -37,6 +37,11 @@ class Post extends Model
     {
         return $this->hasMany(PostComment::class)
             ->where('hidden', false);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(PostImage::class);
     }
 
 }

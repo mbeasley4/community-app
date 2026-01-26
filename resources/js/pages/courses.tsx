@@ -9,7 +9,11 @@ type Course = {
   image?: string
 }
 
-export default function CourseIndex({ads,}:{ads: Advertisement[] }) {
+type Props = {
+  ads: Advertisement[]
+}
+
+export default function CourseIndex( {ads} : Props) {
   const [courses, setCourses] = useState<Course[]>([])
 
   useEffect(() => {
@@ -37,7 +41,7 @@ export default function CourseIndex({ads,}:{ads: Advertisement[] }) {
               {course.image && (
                 <img
                   src={course.image}
-                  className="h-40 w-48 object-cover flex-shrink-0"
+                  className="h-50 w-50 object-cover flex-shrink-0"
                   alt={course.title}
                 />
               )}
@@ -46,7 +50,7 @@ export default function CourseIndex({ads,}:{ads: Advertisement[] }) {
                 <h2 className="font-semibold text-lg">
                   {course.title}
                 </h2>
-                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                <p className="text-sm text-gray-600 mt-1 line-clamp-6">
                   {course.description}
                 </p>
               </div>

@@ -4,17 +4,16 @@ use App\Http\Controllers\EventsController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\RecipesController;
 use App\Http\Controllers\YouTubeController;
-use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CommunityRecipeController;
-use App\Http\Controllers\Api\LectureProgressController;
+use App\Http\Controllers\LectureProgressController;
+use App\Http\Controllers\VideoController;
 
-// ->middleware('auth:sanctum');
-Route::get('/youtube/playlist/{playlistId}', [YouTubeController::class, 'playlist']);
+
+// Route::get('/youtube/playlist/{playlistId}', [YouTubeController::class, 'playlist']);
 
 Route::middleware('auth')->group(function () {
-    Route::get('/courses', function () {
-        return \App\Models\Course::select('id','title','description','image')->get();
-    });
+   Route::get('/courses', [CourseController::class, 'index']);
     
     Route::get('/courses/{course}', [CourseController::class, 'show']);
     
@@ -36,7 +35,10 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/community-recipes', [CommunityRecipeController::class, 'index']);
     Route::post('/community-recipes', [CommunityRecipeController::class, 'store']);
-
+    Route::get('/community-recipes/{recipe}', [CommunityRecipeController::class, 'show']);
+    
+    /* Videos */
+    Route::get('/videos', [VideoController::class, 'index']);
     
     /* POSTS */
     Route::get('/posts', [PostController::class, 'index']);

@@ -57,11 +57,18 @@ export interface Comment {
   user: UserMini
 }
 
+export type PostImage = {
+  id: number
+  url: string
+}
+
+
 export interface Post {
   id: number
   body: string
   created_at: string
   reaction_summary?: Record<string, number>
+  images?: PostImage[]
   comments?: Comment[]
   comments_count?: number
   user: UserMini

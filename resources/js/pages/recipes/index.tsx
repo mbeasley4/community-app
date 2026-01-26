@@ -1,14 +1,31 @@
 import { useState } from 'react'
+import { usePage } from '@inertiajs/react'
 import CommunityLayoutNoRight from '@/layouts/community-layout-no-right'
 
 import Fit30Recipes from '@/components/recipes/fit30-recipes'
 import CommunityRecipes from '@/components/recipes/community-recipes'
+import { Advertisement } from "@/types/advertisement"
 
-export default function RecipesPage() {
-  const [tab, setTab] = useState<'whole30' | 'community'>('whole30')
+type Props = {
+  ads: Advertisement[]
+}
+export default function RecipesPage( {ads} : Props) {
+  const { url } = usePage()
+
+  // Read tab from query param
+  const params = new URLSearchParams(url.split('?')[1] || '')
+  const defaultTab =
+    params.get('tab') === 'community' ? 'community' : 'whole30'
+
+  const [tab, setTab] = useState<'whole30' | 'community'>(defaultTab)
+
+  function switchTab(next: 'whole30' | 'community') {
+    setTab(next)
+    window.history.replaceState(null, '', `/recipes?tab=${next}`)
+  }
 
   return (
-    <CommunityLayoutNoRight>
+    <CommunityLayoutNoRight ads={ads}>
       <section className="mx-auto max-w-7xl px-6 space-y-8">
 
         {/* Header */}
@@ -23,26 +40,29 @@ export default function RecipesPage() {
 
         {/* Tabs */}
         <div className="flex gap-0.5 border-b-2 border-orange-600">
+
           <button
-            onClick={() => setTab('whole30')}
+            onClick={() => switchTab('whole30')}
             className={`pb-2 text-sm font-medium ${
               tab === 'whole30'
                 ? 'border-l-2 border-r-2 border-t-2 rounded-t-sm p-2 border-orange-600 text-white bg-orange-600'
-                : 'border-l-2 border-r-2 border-t-2 rounded-t-sm p-2 border-gray-500 text-gray-500'
+                : 'border-l-2 border-r-2 border-t-2 rounded-t-sm p-2 border-gray-400 text-gray-500 hover:text-orange-600'
             }`}
           >
             Fit30 Recipes
           </button>
+
           <button
-            onClick={() => setTab('community')}
+            onClick={() => switchTab('community')}
             className={`pb-2 text-sm font-medium ${
               tab === 'community'
                 ? 'border-l-2 border-r-2 border-t-2 rounded-t-sm p-2 border-orange-600 text-white bg-orange-600'
-                : 'border-l-2 border-r-2 border-t-2 rounded-t-sm p-2 border-gray-500 text-gray-500'
+                : 'border-l-2 border-r-2 border-t-2 rounded-t-sm p-2 border-gray-400 text-gray-500 hover:text-orange-600'
             }`}
           >
             User Recipes
           </button>
+
         </div>
 
         {/* Content */}

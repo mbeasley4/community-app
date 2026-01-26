@@ -15,11 +15,15 @@ type PageProps = {
   }
 }
 
-export default function ProfileSidebar() {
+export default function ProfileSidebar({ visiblePostsCount }: { visiblePostsCount?: number }) {
   const { props } = usePage<PageProps>()
   const user = props.auth?.user
-
   if (!user) return null
+  
+  const postCount =
+    visiblePostsCount !== undefined
+      ? visiblePostsCount
+      : user.posts_count ?? 0
 
   // Build initials fallback
   const initials = user.name
@@ -57,7 +61,7 @@ export default function ProfileSidebar() {
       {/* Stats */}
       <div className="grid grid-cols-3 text-center text-sm">
         <div>
-          <p className="font-semibold text-gray-900">{user.posts_count ?? 0}</p>
+          <p className="font-semibold text-gray-900">{postCount}</p>
           <p className="text-xs text-gray-500">Posts</p>
         </div>
         <div>

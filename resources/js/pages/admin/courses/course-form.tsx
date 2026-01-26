@@ -37,9 +37,19 @@ export default function CourseForm({ course }) {
         <textarea
           value={form.data.description}
           onChange={e => form.setData('description', e.target.value)}
-          className="border w-full px-3 py-2 rounded"
+          className="border w-full px-3 py-2 rounded h-50"
         />
       </div>
+      {course?.image && (
+        <div className="mb-2">
+          <p className="text-sm mb-1">Current Image</p>
+          <img
+            src={course.image}
+            alt={course.title}
+            className="h-32 w-40 object-cover rounded border"
+          />
+        </div>
+      )}
 
       <div>
         <label className="text-sm">Course Image</label>

@@ -16,16 +16,18 @@ type PageProps = {
   }
 }
 
-export default function PostFeed() {
+export default function PostFeed({ onVisibleCountChange }: { onVisibleCountChange?: (n: number)=>void }) {
   const [posts, setPosts] = useState<Post[]>([])
   const [body, setBody] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
+  
+  const [images, setImages] = useState<File[]>([])
+  
   const [commentBodies, setCommentBodies] = useState<Record<number, string>>({})
   const [openCommentBox, setOpenCommentBox] = useState<Record<number, boolean>>({})
-
+  
   const { auth } = usePage<PageProps>().props
   const authUserId = auth.user?.id ?? 0
 
@@ -40,9 +42,17 @@ export default function PostFeed() {
         headers: { Accept: 'application/json' }
       })
       const data = await res.json()
-      setPosts(Array.isArray(data.data) ? data.data : [])
+
+      const list = Array.isArray(data.data) ? data.data : []
+      setPosts(list)
+
+      // Count only my visible posts
+      const myCount = list.filter(p => p.user.id === authUserId).length
+      onVisibleCountChange?.(myCount)
+
     } catch {
       setPosts([])
+      onVisibleCountChange?.(0)
     } finally {
       setLoading(false)
     }
@@ -60,16 +70,19 @@ export default function PostFeed() {
 
     setSubmitting(true)
     setError(null)
+    
+    const formData = new FormData()
+    formData.append('body', body)
+    images.forEach(img => formData.append('images[]', img))
 
     try {
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'X-CSRF-TOKEN': csrfToken,
           Accept: 'application/json'
         },
-        body: JSON.stringify({ body })
+        body: formData
       })
 
       const data = await res.json()
@@ -83,9 +96,14 @@ export default function PostFeed() {
       setSubmitting(false)
     }
   }
+  /* ---------------- Images ---------------- */
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return
+    setImages(Array.from(e.target.files))
+  }
 
   /* ---------------- HIDE POST ---------------- */
-
+  
   const hidePost = async (id: number) => {
     await fetch(`/api/posts/${id}/hide`, {
       method: 'POST',
@@ -95,7 +113,13 @@ export default function PostFeed() {
       }
     })
 
-    setPosts(prev => prev.filter(p => p.id !== id))
+    setPosts(prev => {
+      const next = prev.filter(p => p.id !== id)
+      const myCount = next.filter(p => p.user.id === authUserId).length
+      onVisibleCountChange?.(myCount)
+      return next
+    })
+    
   }
 
   /* ---------------- REACT ---------------- */
@@ -218,6 +242,14 @@ export default function PostFeed() {
           rows={3}
           className="w-full resize-none rounded-md border border-gray-300 p-2 text-gray-800"
         />
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleImageChange}
+          className="text-xs text-gray-500"
+        />
+
         {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="flex justify-end">
           <button
@@ -264,7 +296,20 @@ export default function PostFeed() {
               </div>
 
             </div>
-
+            
+            {/* Post Images */}
+            {post.images && post.images.length > 0 && (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {post.images.map(img => (
+                  <img
+                    key={img.id}
+                    src={img.url}
+                    className="rounded-lg object-cover max-h-80 w-full"
+                    alt="Post image"
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Body */}
             <p className="whitespace-pre-line text-gray-800">{post.body}</p>

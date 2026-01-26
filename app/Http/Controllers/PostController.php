@@ -14,9 +14,11 @@ class PostController extends Controller
     public function index()
     {
         return Post::query()
+            ->where('hidden', false)
             ->with([
                 'user:id,name,avatar',
-                'comments.user:id,name,avatar'
+                'comments.user:id,name,avatar',
+                'images'
             ])
             ->withCount('comments as comments_count')
             ->select('*')
@@ -38,6 +40,7 @@ class PostController extends Controller
     {
         $data = $request->validate([
             'body' => ['required', 'string', 'max:5000', new NoProfanity],
+            'images.*' => 'image|max:2048'
         ]);
 
 
@@ -45,8 +48,14 @@ class PostController extends Controller
             'user_id' => auth()->id(), // assumes auth
             'body' => $data['body'],
         ]);
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('community/posts', 'public');
+                $post->images()->create(['path' => $path]);
+            }
+        }
 
-        return $post->load('user:id,name');
+        return $post->load('user:id,name,avatar', 'images');
     }
 
     public function hide(Post $post)

@@ -13,17 +13,24 @@ class UserManagementController extends Controller
     public function index()
     {
         return inertia('admin/users/index', [
-            'users' => User::with('roles')->paginate(20),
+            'users' => User::with(['roles', 'latestPurchase'])->paginate(20),
         ]);
     }
 
     public function edit(User $user)
     {
         return inertia('admin/users/edit', [
-            'user'  => $user->load('roles'),
+            'user' => $user->load([
+                'roles',
+                'purchases' => function ($q) {
+                    $q->with('items')
+                    ->orderByDesc('purchased_at');
+                }
+            ]),
             'roles' => Role::pluck('name'),
         ]);
     }
+
     /**
      * Update user profile + role
      */

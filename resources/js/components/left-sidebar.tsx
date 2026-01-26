@@ -2,7 +2,11 @@ import Fit30DayCounter from "./fit30-day-counter";
 import ProfileSidebar from "./profile-sidebar";
 import AdminMenu from "./admin-menu"
 
-export default function LeftSidebar() {
+type Props = {
+  visiblePostsCount?: number
+}
+
+export default function LeftSidebar({ visiblePostsCount }: Props) {
     return (
         <>
             {/* Left Sidebar (1/4) */}
@@ -11,11 +15,7 @@ export default function LeftSidebar() {
                     <Fit30DayCounter startDate="2026-01-05" />
                 </div>
                 <div className="rounded-xl border bg-white mb-2 p-4">
-                    Courses
-                    <p><a href="/courses">Go to courses</a></p>
-                </div>
-                <div className="rounded-xl border bg-white mb-2 p-4">
-                    <ProfileSidebar />
+                    <ProfileSidebar visiblePostsCount={visiblePostsCount} />
                 </div>
                 {/* Admin-only menu */}
                 <AdminMenu />

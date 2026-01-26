@@ -1,11 +1,15 @@
-import CommunityLayoutNoRight from '@/layouts/community-layout-no-right';
-import YouTubePlaylist from '@/components/youtube-playlist';
+import CommunityLayoutNoRight from '@/layouts/community-layout-no-right'
+import VideoGrid from '@/components/videos/video-grid'
+import { Advertisement } from '@/types/advertisement'
 
+type Props = {
+  ads: Advertisement[]
+}
 
-export default function Videos() {
-    return (
-        <CommunityLayoutNoRight>
-            <YouTubePlaylist playlistId="PLo6fBQa9_esbBuKzIXJlnXQXixcCM-J6Q" />
-        </CommunityLayoutNoRight>
-    );
+export default function Videos({ads}: Props) {
+  return (
+    <CommunityLayoutNoRight ads={ads}>
+      <VideoGrid />
+    </CommunityLayoutNoRight>
+  )
 }

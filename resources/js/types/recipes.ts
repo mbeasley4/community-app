@@ -14,15 +14,24 @@ export type Fit30Recipe = {
   }
 }
 
+export type IngredientRow = {
+  amount: string
+  unit: string
+  name: string
+}
+
 export type CommunityRecipe = {
   id: number
   title: string
   excerpt: string
-  image_path?: string | null
-  created_at: string
-  user?: {
+  ingredients: IngredientRow[]
+  instructions: string[]
+  image_url?: string | null
+  user: {
+    id: number
     name: string
-  } | null
+    avatar_url?: string | null
+  }
 }
 
 export type Recipe = Fit30Recipe | CommunityRecipe
