@@ -154,7 +154,7 @@ const EventListing: React.FC = () => {
   const events = activeTab === 'upcoming' ? upcomingEvents : pastEvents
 
   return (
-    <section className="px-6">
+    <section className="px-0 lg:px-6">
       <header className="mb-6">
         <h2 className="text-3xl font-semibold tracking-tight text-black">
           Events

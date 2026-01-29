@@ -8,7 +8,7 @@ type RecipeGridProps = {
 
 export default function RecipeGrid({ recipes, externalLinks }: RecipeGridProps) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {recipes.map(recipe => {
         const Fit30 = isFit30Recipe(recipe)
 

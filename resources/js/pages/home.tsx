@@ -38,7 +38,7 @@ export default function Home() {
 
                 <a
                   href="#pricing"
-                  className="rounded-md bg-[#f97316] px-5 py-2 text-white font-medium hover:bg-[#ea580c] transition shadow-sm"
+                  className="hidden lg:block rounded-md bg-[#f97316] px-5 py-2 text-white font-medium hover:bg-[#ea580c] transition shadow-sm"
                 >
                   Check program pricing
                 </a>

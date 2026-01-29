@@ -36,7 +36,7 @@ export default function CoursePage({ ads }: Props) {
 
   return (
     <CommunityLayout ads={ads}>
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-6xl mx-auto px-0 lg:px-6">
         <h1 className="text-3xl font-semibold mb-3">Courses</h1>
 
         <p className="text-gray-600 mb-8 max-w-3xl">
@@ -50,17 +50,17 @@ export default function CoursePage({ ads }: Props) {
             return (
               <div
                 key={course.id}
-                className="flex items-center gap-5 rounded-xl border bg-white overflow-hidden"
+                className="flex flex-col lg:flex-row items-center gap-5 rounded-xl border bg-white overflow-hidden"
               >
                 {course.image && (
                   <img
                     src={course.image}
-                    className="h-60 w-60 object-cover flex-shrink-0"
+                    className="h-auto w-full lg:h-60 lg:w-60 object-cover flex-shrink-0"
                     alt={course.title}
                   />
                 )}
 
-                <div className="py-4 pr-4 flex-1">
+                <div className="px-4 pb-12 lg:pb-0 lg:py-4 lg:pr-4 flex-1">
                   <h2 className="font-semibold text-lg">
                     {course.title}
                   </h2>

@@ -26,7 +26,7 @@ export default function RecipesPage( {ads} : Props) {
 
   return (
     <CommunityLayoutNoRight ads={ads}>
-      <section className="mx-auto max-w-7xl px-6 space-y-8">
+      <section className="mx-auto max-w-7xl px-0 lg:px-6 space-y-8">
 
         {/* Header */}
         <header>

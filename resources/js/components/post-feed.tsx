@@ -231,7 +231,7 @@ export default function PostFeed({ onVisibleCountChange }: { onVisibleCountChang
   }
 
   return (
-    <section className="mx-auto px-6 space-y-6">
+    <section className="mx-auto px-0 lg:px-6 space-y-6">
 
       {/* CREATE POST */}
       <form onSubmit={submitPost} className="rounded-xl border bg-white p-4 shadow-sm space-y-3">
