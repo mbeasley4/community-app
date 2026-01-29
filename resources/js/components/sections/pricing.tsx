@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from '@inertiajs/react'
 import { community } from '@/routes'
 import { type SharedData } from '@/types'
@@ -13,18 +13,45 @@ export type PriceOption = {
 }
 
 type PricingProps = {
-  pricing: PriceOption[]
   auth: SharedData['auth']
-  checkout: (priceId: string, termsAccepted: boolean) => void
 }
 
-export default function Pricing({ pricing, auth, checkout }: PricingProps) {
+export default function Pricing({ auth }: PricingProps) {
+  const [pricing, setPricing] = useState<PriceOption[]>([])
   const [showTerms, setShowTerms] = useState(false)
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null)
 
+  // Load products from database
+  useEffect(() => {
+    fetch('/api/products')
+      .then(r => r.json())
+      .then(setPricing)
+  }, [])
+
+  // Open terms modal
   function handlePurchaseClick(priceId: string) {
     setSelectedPriceId(priceId)
     setShowTerms(true)
+  }
+
+  // Send to Stripe checkout
+  function checkout(priceId: string, termsAccepted = false) {
+    const csrf =
+      document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+        ?.content ?? ''
+
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = '/checkout'
+
+    form.innerHTML = `
+      <input type="hidden" name="_token" value="${csrf}">
+      <input type="hidden" name="price_id" value="${priceId}">
+      <input type="hidden" name="terms_accepted" value="${termsAccepted ? '1' : ''}">
+    `
+
+    document.body.appendChild(form)
+    form.submit()
   }
 
   function acceptTermsAndCheckout() {
@@ -34,10 +61,7 @@ export default function Pricing({ pricing, auth, checkout }: PricingProps) {
   }
 
   return (
-    <section
-      id="pricing"
-      className="max-w-6xl mx-auto px-6 py-16 text-center"
-    >
+    <section id="pricing" className="max-w-6xl mx-auto px-6 py-16 text-center">
       <h2 className="text-3xl font-semibold mb-3">
         Choose your program
       </h2>
@@ -46,7 +70,7 @@ export default function Pricing({ pricing, auth, checkout }: PricingProps) {
         Purchase a Cohort, Foundation Courses, or save with the bundle.
       </p>
 
-      {/* 4-column grid */}
+      {/* Pricing Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {pricing.map(option => (
           <div
@@ -75,6 +99,7 @@ export default function Pricing({ pricing, auth, checkout }: PricingProps) {
               {option.price}
             </div>
 
+            {/* Logged out → Buy */}
             {!auth.user && (
               <button
                 onClick={() => handlePurchaseClick(option.priceId)}
@@ -84,6 +109,7 @@ export default function Pricing({ pricing, auth, checkout }: PricingProps) {
               </button>
             )}
 
+            {/* Logged in → Go to community */}
             {auth.user && (
               <Link
                 href={community()}
@@ -120,8 +146,6 @@ export default function Pricing({ pricing, auth, checkout }: PricingProps) {
                 Participation requires respectful conduct inside the cohort
                 community and adherence to community guidelines.
               </p>
-
-              {/* Replace with your full legal terms when ready */}
             </div>
 
             <div className="mt-6 flex justify-end gap-3">

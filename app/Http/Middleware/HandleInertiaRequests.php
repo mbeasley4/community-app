@@ -52,7 +52,11 @@ class HandleInertiaRequests extends Middleware
                 'user' => fn () => $request->user()
                     ? array_merge(
                         $request->user()
-                             ->loadCount([
+                            ->load([
+                                'purchasedCourses:id,slug,title',
+                                'cohort'
+                            ])
+                            ->loadCount([
                                 'visiblePosts as posts_count' => fn ($q) => $q->where('hidden', false),
                                 'recipes'
                             ])
@@ -70,16 +74,23 @@ class HandleInertiaRequests extends Middleware
                             ]),
                         [
                             'roles' => $request->user()->getRoleNames(),
+                            'purchased_courses' => $request->user()
+                                ->purchasedCourses
+                                ->map(fn ($c) => [
+                                    'id' => $c->id,
+                                    'slug' => $c->slug,
+                                    'title' => $c->title,
+                                ]),
+                            'cohort' => $request->user()->cohort,
                         ]
                     )
                     : null,
-
-                'notificationCount' => fn () =>
-                    $request->user()
-                        ? $request->user()
-                            ->unreadNotificationsSinceLastLogin()
-                            ->count()
-                        : 0,
+            'notificationCount' => fn () =>
+                $request->user()
+                    ? $request->user()
+                        ->unreadNotificationsSinceLastLogin()
+                        ->count()
+                    : 0,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

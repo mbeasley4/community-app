@@ -20,7 +20,7 @@ return [
         'cohort_access' => true,
     ],
 
-    'price_reintro_xxxxx' => [ // Reintro
+    'price_1SuDllPAqkOdrASehxW3Qbuf' => [ // Reintro
         'role' => null,
         'courses' => ['reintro'],
         'cohort_access' => false,

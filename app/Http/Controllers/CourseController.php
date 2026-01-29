@@ -16,6 +16,7 @@ class CourseController extends Controller
                 'id' => $course->id,
                 'title' => $course->title,
                 'description' => $course->description,
+                'slug' => $course->slug,
                 'image' => $course->image
                     ? asset('storage/' . $course->image)
                     : null,

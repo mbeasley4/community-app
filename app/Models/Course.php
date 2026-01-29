@@ -12,4 +12,11 @@ class Course extends Model
     {
         return $this->hasMany(Lecture::class)->orderBy('position');
     }
+
+    public function purchasers()
+    {
+        return $this->belongsToMany(\App\Models\User::class)
+            ->withPivot('purchased_at')
+            ->withTimestamps();
+    }
 }

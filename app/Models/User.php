@@ -25,6 +25,7 @@ class User extends Authenticatable
         'email',
         'password',
         'avatar',
+        'registration_token',
     ];
 
     /**
@@ -110,4 +111,16 @@ class User extends Authenticatable
         return $this->hasMany(Purchase::class);
     }
 
+
+    public function purchasedCourses()
+    {
+        return $this->belongsToMany(\App\Models\Course::class)
+            ->withPivot('purchased_at')
+            ->withTimestamps();
+    }
+
+    public function cohort()
+    {
+        return $this->hasOne(\App\Models\CohortMembership::class);
+    }
 }

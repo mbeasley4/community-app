@@ -8,6 +8,8 @@ use App\Models\Advertisement;
 
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\RegistrationCompletionController;
+
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\AdvertisementController;
 use App\Http\Controllers\Admin\CourseController;
@@ -53,7 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /** Events */
     Route::get('/events', function () {
-        return Inertia::render('events', [
+        return Inertia::render('events/index', [
         'ads' => Advertisement::where('is_active', true)
                     ->orderBy('position')
                     ->get()
@@ -61,11 +63,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('events');
 
     Route::get('/videos', function () {
-        return Inertia::render('videos');
+        return Inertia::render('videos/index');
     })->name('videos');
 
     Route::get('/courses', function () {
-        return Inertia::render('courses', [
+        return Inertia::render('courses/index', [
         'ads' => Advertisement::where('is_active', true)
                     ->orderBy('position')
                     ->get()
@@ -73,7 +75,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('courses');
     
     Route::get('/courses/{course}', function (Course $course) {
-        return Inertia::render('course-show', [
+        return Inertia::render('courses/show', [
             'courseId' => $course->id,
         ]);
     })->name('courses.show');
@@ -101,13 +103,19 @@ Route::get('/img', function (\Illuminate\Http\Request $request) {
         ->header('Cache-Control', 'public, max-age=86400');
 });
 
-Route::post('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
+Route::post('/checkout', [CheckoutController::class, 'Create'])->name('checkout.create');
 
-Route::get('/checkout/success', [CheckoutController::class, 'success'])
+Route::get('/checkout/success', [CheckoutController::class, 'Success'])
     ->name('checkout.success');
 
-Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])
+Route::get('/checkout/cancel', [CheckoutController::class, 'Cancel'])
     ->name('checkout.cancel');
+    
+Route::get('/complete-registration', [RegistrationCompletionController::class, 'show'])
+    ->name('registration.complete.form');
+
+Route::post('/complete-registration', [RegistrationCompletionController::class, 'store'])
+    ->name('registration.complete.store');
 
 
 /**

@@ -6,7 +6,7 @@ type Props = {
   ads: Advertisement[]
 }
 
-export default function Videos({ads}: Props) {
+export default function VideosPage({ads}: Props) {
   return (
     <CommunityLayoutNoRight ads={ads}>
       <VideoGrid />

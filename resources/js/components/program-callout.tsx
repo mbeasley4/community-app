@@ -1,4 +1,4 @@
-export default function W30ProgramCallout() {
+export default function ProgramCallout() {
   return (
     <section className="bg-gradient-to-br from-[#fff7f2] to-white py-16">
       <div className="max-w-3xl mx-auto px-6 text-center">

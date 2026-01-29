@@ -1,4 +1,4 @@
-import Fit30DayCounter from "./fit30-day-counter";
+import Fit30DayCounter from "./day-counter";
 import ProfileSidebar from "./profile-sidebar";
 import AdminMenu from "./admin-menu"
 import { Advertisement } from "@/types/advertisement"

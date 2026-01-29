@@ -10,29 +10,29 @@ type Benefit = {
 
 const benefits: Benefit[] = [
   {
-    title: 'Structure',
+    title: 'How it works',
     description: 'Follow a proven day-by-day program built for real success.',
-    link: 'https://whole30.com/whole30-program/',
+    link: '/how-it-works',
     linkText: 'Learn about the program',
     icon: <LayoutGrid className="h-8 w-8" />
   },
   {
     title: 'Support',
     description: 'Get guidance, community, and accountability to finish strong.',
-    link: 'https://whole30.com/community/',
+    link: '/example-community',
     linkText: 'Explore the community',
     icon: <Users className="h-8 w-8" />
   },
   {
     title: 'Sustainability',
-    description: 'Learn Food Freedom so results last far beyond Day 30.',
-    link: 'https://whole30.com/reintroduction/',
-    linkText: 'Learn about Food Freedom',
+    description: 'Learn the freedom so results last far beyond Day 30.',
+    link: '/freedom',
+    linkText: 'Learn about Freedom',
     icon: <Leaf className="h-8 w-8" />
   }
 ]
 
-export default function Benefits() {
+export default function Benefits() { 
   return (
     <section className="bg-[#da5b01] py-10">
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-6 text-center">

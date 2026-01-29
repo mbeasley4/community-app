@@ -1,5 +1,6 @@
 <?php
 use Illuminate\Support\Facades\Route;
+use \App\Models\Product;
 use App\Http\Controllers\EventsController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\RecipesController;
@@ -11,6 +12,17 @@ use App\Http\Controllers\VideoController;
 
 
 // Route::get('/youtube/playlist/{playlistId}', [YouTubeController::class, 'playlist']);
+Route::get('/products', function () {
+    return Product::all()->map(fn($p) => [
+        'id' => $p->slug,
+        'name' => $p->name,
+        'description' => $p->description,
+        'price' => $p->price,
+        'priceId' => $p->stripe_price_id,
+        'highlight' => (bool) $p->highlight,
+    ]);
+});
+
 
 Route::middleware('auth')->group(function () {
    Route::get('/courses', [CourseController::class, 'index']);
