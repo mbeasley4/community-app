@@ -3,19 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\Product;
 use App\Models\User;
-use \App\Models\Product;
-
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Stripe\Stripe;
-use Stripe\Checkout\Session as StripeSession;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Stripe\Checkout\Session as StripeSession;
+use Stripe\Stripe;
 
 class CheckoutController extends Controller
 {
+    public function show(Request $request)
+    {
+        $slug = $request->query('product');
+
+        $product = Product::where('slug', $slug)->firstOrFail();
+
+        return inertia('checkout', [
+            'product' => [
+                'slug' => $product->slug,
+                'name' => $product->name,
+                'price' => '$' . number_format(((int) $product->price_cents) / 100, 2),
+            ],
+        ]);
+    }
+
     public function create(Request $request)
     {
         $request->validate([
@@ -30,9 +44,9 @@ class CheckoutController extends Controller
             'payment_method_types' => ['card'],
             'line_items' => [[
                 'price' => $request->price_id,
-                'quantity' => 1
+                'quantity' => 1,
             ]],
-            'success_url' => route('checkout.success') . '?session_id={CHECKOUT_SESSION_ID}',
+            'success_url' => route('checkout.success').'?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('checkout.cancel'),
         ]);
 
@@ -60,12 +74,14 @@ class CheckoutController extends Controller
         $priceId = $session->line_items->data[0]->price->id ?? null;
         if (! $priceId) {
             Log::error('Stripe session missing price_id');
+
             return inertia('checkout-cancel');
         }
 
         $email = $session->customer_details->email ?? null;
         if (! $email) {
             Log::error('Stripe session missing customer email');
+
             return inertia('checkout-cancel');
         }
 
@@ -83,6 +99,7 @@ class CheckoutController extends Controller
         // Existing user → log in and go home
         if (! $user->wasRecentlyCreated) {
             Auth::login($user);
+
             return redirect()->route('home');
         }
 
@@ -112,6 +129,7 @@ class CheckoutController extends Controller
 
         if (! $product) {
             Log::error("Unknown Stripe price_id: {$priceId}");
+
             return;
         }
 
@@ -128,7 +146,7 @@ class CheckoutController extends Controller
             $course = Course::where('slug', $courseSlug)->first();
             if ($course) {
                 $user->purchasedCourses()->syncWithoutDetaching([
-                    $course->id => ['purchased_at' => now()]
+                    $course->id => ['purchased_at' => now()],
                 ]);
             }
         }
@@ -138,5 +156,4 @@ class CheckoutController extends Controller
             $user->cohort()->create(['joined_at' => now()]);
         }
     }
-
 }

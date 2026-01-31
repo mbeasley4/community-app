@@ -103,7 +103,14 @@ Route::get('/img', function (\Illuminate\Http\Request $request) {
         ->header('Cache-Control', 'public, max-age=86400');
 });
 
-Route::post('/checkout', [CheckoutController::class, 'Create'])->name('checkout.create');
+// Show checkout page
+Route::get('/checkout', [CheckoutController::class, 'show'])
+    ->name('checkout.show');
+
+// Process purchase
+Route::post('/checkout', [CheckoutController::class, 'store'])
+    ->name('checkout.store');
+
 
 Route::get('/checkout/success', [CheckoutController::class, 'Success'])
     ->name('checkout.success');
