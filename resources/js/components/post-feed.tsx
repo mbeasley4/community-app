@@ -31,18 +31,15 @@ export default function PostFeed({
   const [commentBodies, setCommentBodies] = useState<Record<number, string>>({})
   const [openCommentBox, setOpenCommentBox] = useState<Record<number, boolean>>({})
 
-  // 🔥 MOBILE REACTION STATE
-  const [openReactionPostId, setOpenReactionPostId] = useState<number | null>(
-    null
-  )
+  /* 🔥 REACTION STATE */
+  const [openReactionPostId, setOpenReactionPostId] = useState<number | null>(null)
   const longPressTimer = useRef<number | null>(null)
 
   const { auth } = usePage<PageProps>().props
   const authUserId = auth.user?.id ?? 0
 
   const csrfToken =
-    document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ??
-    ''
+    document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''
 
   /* ---------------- LOAD POSTS ---------------- */
 
@@ -56,7 +53,7 @@ export default function PostFeed({
 
       setPosts(list)
 
-      const myCount = list.filter((p) => p.user.id === authUserId).length
+      const myCount = list.filter(p => p.user.id === authUserId).length
       onVisibleCountChange?.(myCount)
     } catch {
       setPosts([])
@@ -81,7 +78,7 @@ export default function PostFeed({
 
     const formData = new FormData()
     formData.append('body', body)
-    images.forEach((img) => formData.append('images[]', img))
+    images.forEach(img => formData.append('images[]', img))
 
     try {
       const res = await fetch('/api/posts', {
@@ -96,7 +93,7 @@ export default function PostFeed({
       const data = await res.json()
       if (!res.ok) throw new Error()
 
-      setPosts((prev) => [data, ...prev])
+      setPosts(prev => [data, ...prev])
       setBody('')
       setImages([])
     } catch {
@@ -122,8 +119,8 @@ export default function PostFeed({
     const data = await res.json()
     if (!res.ok) return
 
-    setPosts((prev) =>
-      prev.map((p) =>
+    setPosts(prev =>
+      prev.map(p =>
         p.id === postId
           ? { ...p, reaction_summary: data.reactionSummary }
           : p
@@ -158,7 +155,7 @@ export default function PostFeed({
     name
       .split(' ')
       .slice(0, 2)
-      .map((n) => n[0])
+      .map(n => n[0])
       .join('')
       .toUpperCase()
 
@@ -167,7 +164,7 @@ export default function PostFeed({
   if (loading) {
     return (
       <div className="space-y-4 px-6">
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3].map(i => (
           <div key={i} className="h-24 rounded-xl bg-gray-200 animate-pulse" />
         ))}
       </div>
@@ -176,16 +173,46 @@ export default function PostFeed({
 
   return (
     <section className="mx-auto px-0 lg:px-6 space-y-6">
-      {posts.map((post) => {
-        const DefaultReactionIcon = REACTIONS[0].Icon
+      {posts.map(post => {
+        const DefaultReaction = REACTIONS[0]
 
         return (
           <article
             key={post.id}
             className="rounded-xl border bg-white p-5 shadow-sm space-y-3"
           >
+            {/* HEADER */}
+            <div className="flex items-center gap-3 text-sm text-gray-500">
+              {post.user.avatar_url ? (
+                <img
+                  src={post.user.avatar_url}
+                  className="h-9 w-9 rounded-full object-cover"
+                  alt={post.user.name}
+                />
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-700">
+                  {initials(post.user.name)}
+                </div>
+              )}
+
+              <div>
+                <div className="font-semibold text-gray-800">
+                  {post.user.name}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {new Date(post.created_at).toLocaleString()}
+                </div>
+              </div>
+            </div>
+
             {/* BODY */}
             <p className="whitespace-pre-line text-gray-800">{post.body}</p>
+
+            {/* SUMMARY */}
+            <ReactionSummary
+              reactionSummary={post.reaction_summary}
+              onReact={type => reactToPost(post.id, type)}
+            />
 
             {/* ACTION BAR */}
             <div className="flex items-center gap-6 pt-2">
@@ -194,29 +221,21 @@ export default function PostFeed({
                 <button
                   type="button"
                   className="flex items-center gap-2 text-xs text-gray-500 hover:text-blue-600"
-                  onClick={() =>
-                    reactToPost(post.id, REACTIONS[0].type)
-                  }
-                  onTouchStart={() =>
-                    handleReactionTouchStart(post.id)
-                  }
+                  onClick={() => reactToPost(post.id, DefaultReaction.type)}
+                  onTouchStart={() => handleReactionTouchStart(post.id)}
                   onTouchEnd={handleReactionTouchEnd}
-                  onMouseEnter={() =>
-                    setOpenReactionPostId(post.id)
-                  }
-                  onMouseLeave={() =>
-                    setOpenReactionPostId(null)
-                  }
+                  onMouseEnter={() => setOpenReactionPostId(post.id)}
+                  onMouseLeave={() => setOpenReactionPostId(null)}
                 >
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100">
-                    <DefaultReactionIcon className="h-4 w-4 text-gray-600" />
+                    <DefaultReaction.Icon className="h-4 w-4 text-gray-600" />
                   </span>
                   Like
                 </button>
 
                 {openReactionPostId === post.id && (
                   <div className="absolute left-0 top-full mt-2 flex bg-white border rounded-full shadow px-2 py-1 gap-2 z-20">
-                    {REACTIONS.map((r) => (
+                    {REACTIONS.map(r => (
                       <button
                         key={r.type}
                         onClick={() => {
@@ -238,25 +257,25 @@ export default function PostFeed({
               </div>
 
               {/* COMMENT */}
-              <button className="flex items-center gap-2 text-xs text-gray-500 hover:text-blue-600">
+              <button
+                onClick={() => setOpenCommentBox(prev => ({ ...prev, [post.id]: true }))}
+                className="flex items-center gap-2 text-xs text-gray-500 hover:text-blue-600"
+              >
                 <MessageCircle className="h-4 w-4" />
                 Comment
               </button>
 
               {/* REMOVE */}
               {post.user.id === authUserId && (
-                <button className="flex items-center gap-1 text-xs text-red-500 hover:underline">
+                <button
+                  onClick={() => hidePost(post.id)}
+                  className="flex items-center gap-1 text-xs text-red-500 hover:underline"
+                >
                   <Trash2 className="h-4 w-4" />
                   Remove
                 </button>
               )}
             </div>
-
-            {/* SUMMARY */}
-            <ReactionSummary
-              reactionSummary={post.reaction_summary}
-              onReact={(type) => reactToPost(post.id, type)}
-            />
           </article>
         )
       })}
