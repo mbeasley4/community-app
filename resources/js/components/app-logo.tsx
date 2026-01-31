@@ -5,7 +5,7 @@ export default function AppLogo() {
       <a href="/community">
         <img
           src="/images/logos/f30-cohort.png"
-          alt="W30 Cohort"
+          alt="Fit30 COmmunity"
           className="h-12 w-auto"
         />
       </a>
