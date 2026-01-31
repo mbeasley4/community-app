@@ -238,12 +238,15 @@ export default function PostFeed({
                     {REACTIONS.map(r => (
                       <button
                         key={r.type}
-                        onClick={() => {
+                        type="button"
+                        onPointerDown={e => {
+                          e.preventDefault()
+                          e.stopPropagation()
+
                           reactToPost(post.id, r.type)
                           setOpenReactionPostId(null)
                         }}
-                        type="button"
-                        className="hover:scale-125 transition"
+                        className="hover:scale-125 transition active:scale-110"
                       >
                         <span
                           className={`flex h-8 w-8 items-center justify-center rounded-full ${r.bg}`}
@@ -252,6 +255,7 @@ export default function PostFeed({
                         </span>
                       </button>
                     ))}
+
                   </div>
                 )}
               </div>
