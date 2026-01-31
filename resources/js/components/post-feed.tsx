@@ -3,7 +3,7 @@ import { usePage } from '@inertiajs/react'
 import { MessageCircle, Trash2 } from 'lucide-react'
 import ReactionSummary from './reaction-summary'
 import { REACTIONS } from '@/config/reactions'
-import { Post } from '@/types/index'
+import { Post } from '@/types'
 
 type AuthUser = {
   id: number
@@ -33,7 +33,10 @@ export default function PostFeed({
 
   /* 🔥 REACTION STATE */
   const [openReactionPostId, setOpenReactionPostId] = useState<number | null>(null)
+  const [reactionPickerLocked, setReactionPickerLocked] = useState(false)
+
   const longPressTimer = useRef<number | null>(null)
+  const didLongPress = useRef(false)
 
   const { auth } = usePage<PageProps>().props
   const authUserId = auth.user?.id ?? 0
@@ -128,10 +131,14 @@ export default function PostFeed({
     )
   }
 
-  /* ---------------- MOBILE LONG PRESS ---------------- */
+  /* ---------------- LONG PRESS HANDLERS ---------------- */
 
   const handleReactionTouchStart = (postId: number) => {
+    didLongPress.current = false
+
     longPressTimer.current = window.setTimeout(() => {
+      didLongPress.current = true
+      setReactionPickerLocked(true)
       setOpenReactionPostId(postId)
     }, 500)
   }
@@ -143,11 +150,27 @@ export default function PostFeed({
     }
   }
 
+  const unlockReactionPicker = () => {
+    setTimeout(() => {
+      setReactionPickerLocked(false)
+    }, 250)
+  }
+
+  /* ---------------- CLOSE PICKER ON OUTSIDE TOUCH ---------------- */
+
   useEffect(() => {
-    const close = () => setOpenReactionPostId(null)
+    const close = (e: TouchEvent) => {
+      if (reactionPickerLocked) return
+
+      const target = e.target as HTMLElement
+      if (target.closest('[data-reaction-picker]')) return
+
+      setOpenReactionPostId(null)
+    }
+
     document.addEventListener('touchstart', close)
     return () => document.removeEventListener('touchstart', close)
-  }, [])
+  }, [reactionPickerLocked])
 
   /* ---------------- HELPERS ---------------- */
 
@@ -173,6 +196,44 @@ export default function PostFeed({
 
   return (
     <section className="mx-auto px-0 lg:px-6 space-y-6">
+
+      {/* CREATE POST */}
+      <form
+        onSubmit={submitPost}
+        className="rounded-xl border bg-white p-4 shadow-sm space-y-3"
+      >
+        <textarea
+          value={body}
+          onChange={e => setBody(e.target.value)}
+          placeholder="What's on your mind?"
+          rows={3}
+          className="w-full resize-none rounded-md border border-gray-300 p-2 text-gray-800"
+        />
+
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={e =>
+            e.target.files && setImages(Array.from(e.target.files))
+          }
+          className="text-xs text-gray-500"
+        />
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          >
+            {submitting ? 'Posting…' : 'Post'}
+          </button>
+        </div>
+      </form>
+
+      {/* POSTS */}
       {posts.map(post => {
         const DefaultReaction = REACTIONS[0]
 
@@ -216,16 +277,15 @@ export default function PostFeed({
 
             {/* ACTION BAR */}
             <div className="flex items-center gap-6 pt-2">
+
               {/* LIKE / REACTIONS */}
-              <div className="relative inline-block">
+              <div className="relative inline-block"
+                onMouseEnter={() => setOpenReactionPostId(post.id)}
+                onMouseLeave={() => setOpenReactionPostId(null)}
+                >
                 <button
                   type="button"
                   className="flex items-center gap-2 text-xs text-gray-500 hover:text-blue-600"
-                  onClick={() => reactToPost(post.id, DefaultReaction.type)}
-                  onTouchStart={() => handleReactionTouchStart(post.id)}
-                  onTouchEnd={handleReactionTouchEnd}
-                  onMouseEnter={() => setOpenReactionPostId(post.id)}
-                  onMouseLeave={() => setOpenReactionPostId(null)}
                 >
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100">
                     <DefaultReaction.Icon className="h-4 w-4 text-gray-600" />
@@ -234,19 +294,24 @@ export default function PostFeed({
                 </button>
 
                 {openReactionPostId === post.id && (
-                  <div className="absolute left-0 top-full mt-2 flex bg-white border rounded-full shadow px-2 py-1 gap-2 z-20">
+                  <div
+                    data-reaction-picker
+                    className="absolute left-0 top-full mt-0 flex bg-white border rounded-full shadow px-2 py-1 gap-2 z-20"
+                  >
                     {REACTIONS.map(r => (
                       <button
                         key={r.type}
                         type="button"
+                        onTouchStart={() => handleReactionTouchStart(post.id)}
+                        onTouchEnd={handleReactionTouchEnd}
                         onPointerDown={e => {
                           e.preventDefault()
                           e.stopPropagation()
-
                           reactToPost(post.id, r.type)
                           setOpenReactionPostId(null)
+                          unlockReactionPicker()
                         }}
-                        className="hover:scale-125 transition active:scale-110"
+                        className="hover:scale-125 active:scale-110 transition"
                       >
                         <span
                           className={`flex h-8 w-8 items-center justify-center rounded-full ${r.bg}`}
@@ -255,15 +320,22 @@ export default function PostFeed({
                         </span>
                       </button>
                     ))}
-
                   </div>
                 )}
               </div>
 
-              {/* COMMENT */}
+              {/* COMMENT (MOBILE SAFE) */}
               <button
-                onClick={() => setOpenCommentBox(prev => ({ ...prev, [post.id]: true }))}
-                className="flex items-center gap-2 text-xs text-gray-500 hover:text-blue-600"
+                type="button"
+                onPointerDown={e => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setOpenCommentBox(prev => ({
+                    ...prev,
+                    [post.id]: !prev[post.id],
+                  }))
+                }}
+                className="flex items-center gap-2 text-xs text-gray-500 hover:text-blue-600 active:text-blue-700"
               >
                 <MessageCircle className="h-4 w-4" />
                 Comment
@@ -280,6 +352,30 @@ export default function PostFeed({
                 </button>
               )}
             </div>
+
+            {/* COMMENT COMPOSER */}
+            {openCommentBox[post.id] && (
+              <div className="flex gap-2 pt-2">
+                <input
+                  autoFocus
+                  value={commentBodies[post.id] ?? ''}
+                  onChange={e =>
+                    setCommentBodies(prev => ({
+                      ...prev,
+                      [post.id]: e.target.value,
+                    }))
+                  }
+                  placeholder="Write a comment..."
+                  className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm"
+                />
+                <button
+                  onClick={() => submitComment(post.id)}
+                  className="text-sm text-blue-600 font-medium hover:underline"
+                >
+                  Post
+                </button>
+              </div>
+            )}
           </article>
         )
       })}
