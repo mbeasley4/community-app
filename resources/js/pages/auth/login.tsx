@@ -9,6 +9,16 @@ import AuthLayout from '@/layouts/auth-layout';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/react';
+import { useState } from 'react';
+
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/components/ui/dialog'; 
 
 interface LoginProps {
     status?: string;
@@ -19,13 +29,29 @@ export default function Login({
     status,
     canResetPassword,
 }: LoginProps) {
+    const [showDemoModal, setShowDemoModal] = useState(false);
+
     return (
         <AuthLayout
             title="Log in to your account"
             description="Enter your email and password below to log in"
         >
+            <div className="mt-6 text-center">
+                <button
+                    type="button"
+                    onClick={() => setShowDemoModal(true)}
+                    className="
+                        inline-flex items-center gap-2
+                        rounded-md px-4 py-2 text-sm font-medium
+                        bg-primary/10 text-primary
+                        hover:bg-primary/20
+                        transition
+                    "
+                >View demo login credentials
+                </button>
+            </div>
             <Head title="Log in" />
-
+            
             <Form
                 {...store.form()}
                 resetOnSuccess={['password']}
@@ -103,6 +129,41 @@ export default function Login({
                     </>
                 )}
             </Form>
+                <Dialog open={showDemoModal} onOpenChange={setShowDemoModal}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Demo Account</DialogTitle>
+                            <DialogDescription>
+                                Use the credentials below to explore the application.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-4 rounded-md bg-muted p-4 text-sm">
+                            <div>
+                                <div className="font-medium">Email</div>
+                                <code className="block rounded bg-background px-3 py-2">
+                                    demo@blacklabdev.com
+                                </code>
+                            </div>
+
+                            <div>
+                                <div className="font-medium">Password</div>
+                                <code className="block rounded bg-background px-3 py-2">
+                                    demopassword
+                                </code>
+                            </div>
+                        </div>
+
+                        <DialogFooter>
+                            <Button
+                                variant="secondary"
+                                onClick={() => setShowDemoModal(false)}
+                            >
+                                Close
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
