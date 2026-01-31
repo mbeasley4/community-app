@@ -104,26 +104,34 @@ Route::get('/img', function (\Illuminate\Http\Request $request) {
 });
 
 // Show checkout page
+
+Route::get('/purchase/start', [CheckoutController::class, 'start'])
+    ->name('purchase.start');
+
+Route::post('/purchase/register', [CheckoutController::class, 'register'])
+    ->name('purchase.register');
+
+Route::get('/purchase/login', [CheckoutController::class, 'login'])
+    ->name('purchase.login');
+
+Route::post('/purchase/login', [CheckoutController::class, 'authenticate'])
+    ->name('purchase.login.submit');
+
+Route::post('/purchase/confirm', [CheckoutController::class, 'confirm'])
+    ->name('purchase.confirm');
+
+Route::get('/purchase/payment', [CheckoutController::class, 'payment'])
+    ->name('purchase.payment');
+
 Route::get('/checkout', [CheckoutController::class, 'show'])
     ->name('checkout.show');
 
-// Process purchase
-Route::post('/checkout', [CheckoutController::class, 'store'])
+Route::post('/checkout', [CheckoutController::class, 'create'])
     ->name('checkout.store');
-
-
-Route::get('/checkout/success', [CheckoutController::class, 'Success'])
+Route::get('/checkout/success', [CheckoutController::class, 'success'])
     ->name('checkout.success');
-
-Route::get('/checkout/cancel', [CheckoutController::class, 'Cancel'])
+Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])
     ->name('checkout.cancel');
-    
-Route::get('/complete-registration', [RegistrationCompletionController::class, 'show'])
-    ->name('registration.complete.form');
-
-Route::post('/complete-registration', [RegistrationCompletionController::class, 'store'])
-    ->name('registration.complete.store');
-
 
 /**
  * ADMIN ROUTES 

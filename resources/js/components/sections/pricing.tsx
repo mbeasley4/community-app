@@ -34,30 +34,11 @@ export default function Pricing({ auth }: PricingProps) {
     setShowTerms(true)
   }
 
-  // Send to Stripe checkout
-  function checkout(priceId: string, termsAccepted = false) {
-    const csrf =
-      document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
-        ?.content ?? ''
+  // After terms → send user into purchase flow
+  function acceptTermsAndContinue() {
+    if (!selectedPriceId) return
 
-    const form = document.createElement('form')
-    form.method = 'POST'
-    form.action = '/checkout'
-
-    form.innerHTML = `
-      <input type="hidden" name="_token" value="${csrf}">
-      <input type="hidden" name="price_id" value="${priceId}">
-      <input type="hidden" name="terms_accepted" value="${termsAccepted ? '1' : ''}">
-    `
-
-    document.body.appendChild(form)
-    form.submit()
-  }
-
-  function acceptTermsAndCheckout() {
-    if (selectedPriceId) {
-      checkout(selectedPriceId, true)
-    }
+    window.location.href = `/purchase/start?price=${selectedPriceId}`
   }
 
   return (
@@ -99,7 +80,7 @@ export default function Pricing({ auth }: PricingProps) {
               {option.price}
             </div>
 
-            {/* Logged out → Buy */}
+            {/* Logged out → Start purchase */}
             {!auth.user && (
               <button
                 onClick={() => handlePurchaseClick(option.priceId)}
@@ -109,7 +90,7 @@ export default function Pricing({ auth }: PricingProps) {
               </button>
             )}
 
-            {/* Logged in → Go to community */}
+            {/* Logged in → Skip purchase funnel */}
             {auth.user && (
               <Link
                 href={community()}
@@ -157,7 +138,7 @@ export default function Pricing({ auth }: PricingProps) {
               </button>
 
               <button
-                onClick={acceptTermsAndCheckout}
+                onClick={acceptTermsAndContinue}
                 className="px-4 py-2 text-sm rounded-md bg-[#f97316] text-white hover:bg-[#ea580c]"
               >
                 Accept & Continue

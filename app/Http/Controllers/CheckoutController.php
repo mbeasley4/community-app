@@ -25,7 +25,89 @@ class CheckoutController extends Controller
             'product' => [
                 'slug' => $product->slug,
                 'name' => $product->name,
+                'price' => '$'.number_format(((int) $product->price_cents) / 100, 2),
+            ],
+        ]);
+    }
+    
+    
+    public function start(Request $request)
+    {
+        $priceId = $request->query('price');
+
+        abort_unless($priceId, 404);
+
+        session(['purchase.price_id' => $priceId]);
+
+        return inertia('purchase/register');
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', 'min:8'],
+        ]);
+
+        // Check if user already exists
+        $existingUser = User::where('email', $request->email)->first();
+
+        if ($existingUser) {
+            // Store email for convenience
+            session(['purchase.email' => $request->email]);
+
+            return redirect()->route('purchase.login');
+        }
+
+        // Create new user
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        Auth::login($user);
+
+        return redirect()->route('purchase.payment');
+    }
+    public function login()
+    {
+        return inertia('purchase/login', [
+            'email' => session('purchase.email'),
+        ]);
+    }
+    public function authenticate(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (! Auth::attempt($credentials, true)) {
+            return back()->withErrors([
+                'password' => 'Invalid credentials.',
+            ]);
+        }
+
+        // Successful login → continue purchase
+        return redirect()->route('purchase.payment');
+    }
+
+   public function payment()
+    {
+        abort_unless(session()->has('purchase.price_id'), 403);
+
+        $priceId = session('purchase.price_id');
+
+        $product = Product::where('stripe_price_id', $priceId)->firstOrFail();
+
+        return inertia('purchase/payment', [
+            'product' => [
+                'name' => $product->name,
                 'price' => '$' . number_format(((int) $product->price_cents) / 100, 2),
+                'description' => $product->description,
+                'priceId' => $product->stripe_price_id,
             ],
         ]);
     }
