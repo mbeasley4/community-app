@@ -82,7 +82,7 @@ export default function PostFeed({
         headers: { Accept: 'application/json' },
       })
       const data = await res.json()
-      const list = Array.isArray(data.data) ? data.data : []
+      const list: Post[] = Array.isArray(data.data) ? data.data : []
 
       setPosts(list)
 
@@ -101,8 +101,7 @@ export default function PostFeed({
   // Load posts on component mount
   useEffect(() => {
     refreshPosts()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])  // Only run once on mount
+  }, [])
 
   /* ---------------- CREATE POST ---------------- */
 
