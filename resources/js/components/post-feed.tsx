@@ -5,47 +5,77 @@ import ReactionSummary from './reaction-summary'
 import { REACTIONS } from '@/config/reactions'
 import { Post } from '@/types'
 
+/**
+ * Type definition for authenticated user data
+ */
 type AuthUser = {
   id: number
   name: string
 }
 
+/**
+ * Type definition for Inertia.js page props
+ */
 type PageProps = {
   auth: {
     user: AuthUser | null
   }
 }
 
+/**
+ * PostFeed Component
+ *
+ * A social media-style feed that displays posts with reactions and comments.
+ * Features include:
+ * - Creating new posts with images
+ * - Reacting to posts with various emoji reactions (desktop hover & mobile long-press)
+ * - Adding comments to posts
+ * - Removing own posts
+ *
+ * @param onVisibleCountChange - Optional callback that receives the count of posts by the current user
+ */
 export default function PostFeed({
   onVisibleCountChange,
 }: {
   onVisibleCountChange?: (n: number) => void
 }) {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [body, setBody] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  /* ---------------- POST & FORM STATE ---------------- */
+  const [posts, setPosts] = useState<Post[]>([])  // All posts in the feed
+  const [body, setBody] = useState('')  // New post body text
+  const [loading, setLoading] = useState(true)  // Initial posts loading state
+  const [submitting, setSubmitting] = useState(false)  // Post submission in progress
+  const [error, setError] = useState<string | null>(null)  // Post creation error message
 
-  const [images, setImages] = useState<File[]>([])
-  const [commentBodies, setCommentBodies] = useState<Record<number, string>>({})
-  const [openCommentBox, setOpenCommentBox] = useState<Record<number, boolean>>({})
+  /* ---------------- IMAGE & COMMENT STATE ---------------- */
+  const [images, setImages] = useState<File[]>([])  // Selected images for new post
+  const [commentBodies, setCommentBodies] = useState<Record<number, string>>({})  // Comment text by post ID
+  const [openCommentBox, setOpenCommentBox] = useState<Record<number, boolean>>({})  // Comment box visibility by post ID
 
-  /* 🔥 REACTION STATE */
+  /* ---------------- REACTION STATE ---------------- */
+  // Tracks which post's reaction picker is currently open
   const [openReactionPostId, setOpenReactionPostId] = useState<number | null>(null)
+  // Prevents reaction picker from closing on mobile after long-press
   const [reactionPickerLocked, setReactionPickerLocked] = useState(false)
 
+  // Timer for detecting long-press on mobile devices
   const longPressTimer = useRef<number | null>(null)
+  // Flag to distinguish between tap and long-press
   const didLongPress = useRef(false)
 
+  // Get authenticated user from Inertia page props
   const { auth } = usePage<PageProps>().props
   const authUserId = auth.user?.id ?? 0
 
+  // Extract CSRF token from meta tag for API requests
   const csrfToken =
     document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''
 
   /* ---------------- LOAD POSTS ---------------- */
 
+  /**
+   * Fetches all posts from the API and updates the feed.
+   * Also calculates and reports how many posts belong to the current user.
+   */
   const refreshPosts = async () => {
     try {
       const res = await fetch('/api/posts', {
@@ -56,9 +86,11 @@ export default function PostFeed({
 
       setPosts(list)
 
+      // Count posts created by the current user and notify parent
       const myCount = list.filter(p => p.user.id === authUserId).length
       onVisibleCountChange?.(myCount)
     } catch {
+      // On error, clear posts and reset count
       setPosts([])
       onVisibleCountChange?.(0)
     } finally {
@@ -66,19 +98,28 @@ export default function PostFeed({
     }
   }
 
+  // Load posts on component mount
   useEffect(() => {
     refreshPosts()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])  // Only run once on mount
 
   /* ---------------- CREATE POST ---------------- */
 
+  /**
+   * Handles post creation form submission.
+   * Uploads post body text and any selected images to the API.
+   * On success, adds the new post to the top of the feed.
+   */
   const submitPost = async (e: React.FormEvent) => {
     e.preventDefault()
+    // Don't submit if body is empty or only whitespace
     if (!body.trim()) return
 
     setSubmitting(true)
     setError(null)
 
+    // Build form data with text body and image files
     const formData = new FormData()
     formData.append('body', body)
     images.forEach(img => formData.append('images[]', img))
@@ -96,7 +137,9 @@ export default function PostFeed({
       const data = await res.json()
       if (!res.ok) throw new Error()
 
+      // Add new post to the beginning of the feed
       setPosts(prev => [data, ...prev])
+      // Clear form inputs
       setBody('')
       setImages([])
     } catch {
@@ -106,8 +149,82 @@ export default function PostFeed({
     }
   }
 
-  /* ---------------- REACT ---------------- */
+  /* ---------------- DELETE POST ---------------- */
 
+  /**
+   * Removes a post from the feed.
+   * Sends a DELETE request to the API and removes the post from local state on success.
+   *
+   * @param postId - The ID of the post to remove
+   */
+  const hidePost = async (postId: number) => {
+    try {
+      const res = await fetch(`/api/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+          Accept: 'application/json',
+        },
+      })
+
+      if (res.ok) {
+        // Remove post from local state
+        setPosts(prev => prev.filter(p => p.id !== postId))
+
+        // Update visible count for the parent component
+        const myCount = posts.filter(p => p.user.id === authUserId && p.id !== postId).length
+        onVisibleCountChange?.(myCount)
+      }
+    } catch (error) {
+      console.error('Failed to delete post:', error)
+    }
+  }
+
+  /* ---------------- SUBMIT COMMENT ---------------- */
+
+  /**
+   * Submits a comment on a post.
+   * Sends the comment to the API and refreshes the feed on success.
+   *
+   * @param postId - The ID of the post to comment on
+   */
+  const submitComment = async (postId: number) => {
+    const body = commentBodies[postId]?.trim()
+    if (!body) return
+
+    try {
+      const res = await fetch(`/api/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ body }),
+      })
+
+      if (res.ok) {
+        // Refresh posts to show the new comment
+        await refreshPosts()
+
+        // Clear comment input and close comment box
+        setCommentBodies(prev => ({ ...prev, [postId]: '' }))
+        setOpenCommentBox(prev => ({ ...prev, [postId]: false }))
+      }
+    } catch (error) {
+      console.error('Failed to submit comment:', error)
+    }
+  }
+
+  /* ---------------- REACT TO POST ---------------- */
+
+  /**
+   * Sends a reaction to a post (like, love, etc.).
+   * Updates the post's reaction summary in the local state on success.
+   *
+   * @param postId - The ID of the post to react to
+   * @param type - The reaction type (e.g., 'like', 'love', 'celebrate')
+   */
   const reactToPost = async (postId: number, type: string) => {
     const res = await fetch(`/api/posts/${postId}/react`, {
       method: 'POST',
@@ -122,6 +239,7 @@ export default function PostFeed({
     const data = await res.json()
     if (!res.ok) return
 
+    // Update the specific post's reaction summary
     setPosts(prev =>
       prev.map(p =>
         p.id === postId
@@ -131,18 +249,28 @@ export default function PostFeed({
     )
   }
 
-  /* ---------------- LONG PRESS HANDLERS ---------------- */
+  /* ---------------- LONG PRESS HANDLERS (Mobile Touch Support) ---------------- */
 
+  /**
+   * Initiates long-press detection when user touches a reaction button on mobile.
+   * If held for 500ms, shows the reaction picker and locks it open.
+   *
+   * @param postId - The ID of the post being reacted to
+   */
   const handleReactionTouchStart = (postId: number) => {
     didLongPress.current = false
 
     longPressTimer.current = window.setTimeout(() => {
       didLongPress.current = true
-      setReactionPickerLocked(true)
+      setReactionPickerLocked(true)  // Prevent picker from closing immediately
       setOpenReactionPostId(postId)
-    }, 500)
+    }, 500)  // 500ms threshold for long-press
   }
 
+  /**
+   * Cancels long-press detection when user releases touch.
+   * If released before 500ms, it's treated as a tap, not a long-press.
+   */
   const handleReactionTouchEnd = () => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current)
@@ -150,21 +278,32 @@ export default function PostFeed({
     }
   }
 
+  /**
+   * Unlocks the reaction picker after a brief delay.
+   * This allows the user to select a reaction on mobile before auto-close is re-enabled.
+   */
   const unlockReactionPicker = () => {
     setTimeout(() => {
       setReactionPickerLocked(false)
-    }, 250)
+    }, 250)  // Short delay to prevent immediate close
   }
 
   /* ---------------- CLOSE PICKER ON OUTSIDE TOUCH ---------------- */
 
+  /**
+   * Effect: Closes the reaction picker when user touches outside of it (mobile).
+   * Respects the lock state to prevent closing during long-press selection.
+   */
   useEffect(() => {
     const close = (e: TouchEvent) => {
+      // Don't close if picker is locked (during long-press interaction)
       if (reactionPickerLocked) return
 
       const target = e.target as HTMLElement
+      // Don't close if touch is inside the reaction picker
       if (target.closest('[data-reaction-picker]')) return
 
+      // Close the reaction picker
       setOpenReactionPostId(null)
     }
 
@@ -174,6 +313,13 @@ export default function PostFeed({
 
   /* ---------------- HELPERS ---------------- */
 
+  /**
+   * Generates user initials from full name for avatar display.
+   * Takes up to the first two words and uses their first letters.
+   *
+   * @param name - Full name of the user
+   * @returns Uppercase initials (e.g., "John Doe" → "JD")
+   */
   const initials = (name: string) =>
     name
       .split(' ')
@@ -184,6 +330,7 @@ export default function PostFeed({
 
   /* ---------------- RENDER ---------------- */
 
+  // Show loading skeleton while initial posts are being fetched
   if (loading) {
     return (
       <div className="space-y-4 px-6">
@@ -197,7 +344,7 @@ export default function PostFeed({
   return (
     <section className="mx-auto px-0 lg:px-6 space-y-6">
 
-      {/* CREATE POST */}
+      {/* CREATE POST FORM - Allows users to compose and submit new posts with optional images */}
       <form
         onSubmit={submitPost}
         className="rounded-xl border bg-white p-4 shadow-sm space-y-3"
