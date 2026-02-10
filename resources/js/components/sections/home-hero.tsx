@@ -19,8 +19,8 @@ export default function HomeHero() {
                 Guided Fit30 Cycle
                 </span>
 
-                <h1 className="text-4xl lg:text-5xl font-semibold leading-tight mb-4">
-                Reset your rhythm.
+                <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-4">
+                Reset your rhythm. 
                 <span className="text-[#da5b01]">Level up your health.</span>
                 </h1>
 
