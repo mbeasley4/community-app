@@ -16,18 +16,15 @@ export default function HomeHero() {
             {/* LEFT */}
             <div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-medium text-[#da5b01] shadow-sm border mb-4">
-                Guided Fit30 Cohort
+                Guided Fit30 Cycle
                 </span>
 
                 <h1 className="text-4xl lg:text-5xl font-semibold leading-tight mb-4">
-                Reset your habits.<br />
-                <span className="text-[#da5b01]">Transform your health.</span>
+                Reset your rhythm.
+                <span className="text-[#da5b01]">Level up your health.</span>
                 </h1>
 
-                <p className="text-base text-gray-700 mb-6 max-w-md">
-                A structured 30-day reset with real accountability, community support,
-                and expert guidance — built to help you actually finish.
-                </p>
+                <p className="text-base text-gray-700 mb-6 max-w-md">A no-fluff 30-day reset with real accountability, real support, and expert guidance—built so you actually finish.</p>
 
                 {!auth.user && (
                 <a

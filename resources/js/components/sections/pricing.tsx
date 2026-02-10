@@ -44,11 +44,11 @@ export default function Pricing({ auth }: PricingProps) {
   return (
     <section id="pricing" className="max-w-6xl mx-auto px-6 py-16 text-center">
       <h2 className="text-3xl font-semibold mb-3">
-        Choose your program
+        Pick Your Path
       </h2>
 
       <p className="text-gray-600 mb-10">
-        Purchase a Cohort, Foundation Courses, or save with the bundle.
+        Start a Cycle, dive into the Master Series, or save big with the bundle.
       </p>
 
       {/* Pricing Grid */}
@@ -113,9 +113,7 @@ export default function Pricing({ auth }: PricingProps) {
 
             <div className="text-sm text-gray-600 space-y-3 max-h-72 overflow-y-auto pr-2">
               <p>
-                By purchasing this program, you agree that this Fit30 Cohort
-                experience is for educational purposes only and does not replace
-                professional medical advice. Results may vary.
+                By purchasing this program, you acknowledge that the Fit30 Cycle and Master Series programs are for educational purposes only and are not a substitute for professional medical advice. Results may vary.
               </p>
 
               <p>
