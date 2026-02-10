@@ -17,7 +17,7 @@ export default function Home() {
 
         {/* HEADER */}
         <header className="max-w-6xl mx-auto flex justify-between items-center px-6 py-4">
-          <img src="/images/logos/f30-cohort.png" className="h-14" alt="Whole30" />
+          <img src="/images/logos/f30-cycle.png" className="h-14" alt="Fit30 Cycle" />
 
           <nav className="flex items-center gap-3 text-sm">
             {auth.user ? (
