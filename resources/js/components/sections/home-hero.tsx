@@ -19,9 +19,8 @@ export default function HomeHero() {
                 Guided Fit30 Cycle
                 </span>
 
-                <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-4">
-                Reset your rhythm. 
-                <span className="text-[#da5b01]">Level up your health.</span>
+                <h1 className="text-4xl lg:text-6xl font-black leading-tight mb-4 text-balance">
+                Reset your rhythm. <span className="text-[#da5b01]">Level up your health.</span>
                 </h1>
 
                 <p className="text-base text-gray-700 mb-6 max-w-md">A no-fluff 30-day reset with real accountability, real support, and expert guidance—built so you actually finish.</p>
