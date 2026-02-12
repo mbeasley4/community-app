@@ -62,6 +62,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ]);
     })->name('events');
 
+    Route::get('/live', function () {
+        return Inertia::render('live/index', [
+        'ads' => Advertisement::where('is_active', true)
+                    ->orderBy('position')
+                    ->get()
+    ]);
+    })->name('live');
+
     Route::get('/videos', function () {
         return Inertia::render('videos/index');
     })->name('videos');

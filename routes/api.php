@@ -9,6 +9,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CommunityRecipeController;
 use App\Http\Controllers\LectureProgressController;
 use App\Http\Controllers\VideoController;
+use App\Http\Controllers\LiveStreamController; 
 
 
 // Route::get('/youtube/playlist/{playlistId}', [YouTubeController::class, 'playlist']);
@@ -23,6 +24,15 @@ Route::get('/products', function () {
     ]);
 });
 
+ Route::prefix('livestream')->group(function () {
+        Route::post('/token', [LiveStreamController::class, 'getToken']);
+        Route::post('/room/create', [LiveStreamController::class, 'createRoom']);
+        Route::post('/room/join', [LiveStreamController::class, 'joinRoom']);
+    });
+Route::get('/livestream/test-credentials', function () {
+    $service = app(\App\Services\ZegoCloudService::class); 
+    return response()->json($service->validateCredentials());
+});
 
 Route::middleware('auth')->group(function () {
    Route::get('/courses', [CourseController::class, 'index']);
