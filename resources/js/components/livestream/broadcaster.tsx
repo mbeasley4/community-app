@@ -107,7 +107,7 @@ const Broadcaster: React.FC = () => {
         <div className="broadcaster-container min-h-screen bg-gray-50">
             {/* Form - hide when live or connecting */}
             {!isLive && !isConnecting && (
-                <div className="p-6 max-w-2xl mx-auto">
+                <div className="max-w-2xl mx-auto">
                     <div className="bg-white rounded-2xl shadow-sm p-8">
                         <h1 className="text-3xl font-bold mb-2 text-gray-900">Start Live Broadcast</h1>
                         <p className="text-gray-600 mb-8">Go live and connect with your community</p>
@@ -215,7 +215,7 @@ const Broadcaster: React.FC = () => {
 
             {/* Video Player Window */}
             {isLive && (
-                <div className="w-full min-h-screen bg-gray-50 p-4 md:p-8">
+                <div className="w-full min-h-screen bg-gray-50">
                     <div className="max-w-7xl mx-auto">
                         {/* Live indicator banner */}
                         <div className="mb-4 bg-white rounded-xl shadow-sm p-4 flex justify-between items-center">

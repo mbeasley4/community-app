@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import Broadcaster from './broadcaster';
 import Viewer from './viewer';
+import { usePage } from '@inertiajs/react';
 
 type Mode = 'broadcaster' | 'viewer' | null;
 
 const LiveStreamApp: React.FC = () => {
+    const { auth } = usePage<{ auth: { user: { roles: string[] } } }>().props;
+    const isAdmin = auth.user?.roles?.includes('admin');
     const [mode, setMode] = useState<Mode>(null);
 
     if (!mode) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="max-w-lg w-full">
                     {/* Header Card */}
                     <div className="bg-white rounded-2xl shadow-sm p-8 mb-6">
@@ -30,27 +33,29 @@ const LiveStreamApp: React.FC = () => {
 
                     {/* Action Buttons */}
                     <div className="space-y-4">
-                        <button
-                            onClick={() => setMode('broadcaster')}
-                            className="w-full bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-orange-300 text-gray-900 py-6 px-6 rounded-xl font-semibold text-lg transition-all shadow-sm hover:shadow-md group"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-4">
-                                    <div className="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
-                                        <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                        </svg>
+                        {isAdmin && (
+                            <button
+                                onClick={() => setMode('broadcaster')}
+                                className="w-full bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-orange-300 text-gray-900 py-6 px-6 rounded-xl font-semibold text-lg transition-all shadow-sm hover:shadow-md group"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                                            <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div className="text-left">
+                                            <div className="font-semibold text-gray-900">Start Broadcasting</div>
+                                            <div className="text-sm text-gray-500 font-normal">Go live and share with your community</div>
+                                        </div>
                                     </div>
-                                    <div className="text-left">
-                                        <div className="font-semibold text-gray-900">Start Broadcasting</div>
-                                        <div className="text-sm text-gray-500 font-normal">Go live and share with your community</div>
-                                    </div>
+                                    <svg className="w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
                                 </div>
-                                <svg className="w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </div>
-                        </button>
+                            </button>
+                        )}
 
                         <button
                             onClick={() => setMode('viewer')}
@@ -106,7 +111,7 @@ const LiveStreamApp: React.FC = () => {
 
             {/* Content */}
             <div>
-                {mode === 'broadcaster' ? <Broadcaster /> : <Viewer />}
+                {mode === 'broadcaster' && isAdmin ? <Broadcaster /> : <Viewer />}
             </div>
         </div>
     );
