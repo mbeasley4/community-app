@@ -30,15 +30,15 @@ export default function Fit30DayCounter({
 
     if (dayNumber > totalDays) {
       return {
-        status: 'reintro',
-        label: 'Reintro 🎉',
+        status: 'recharge',
+        label: 'Recharge',
       }
     }
 
     if (dayNumber > (totalDays + reintroDays)) {
       return {
         status: 'completed',
-        label: 'Completed 🎉',
+        label: 'Completed',
       }
     }
 
@@ -65,7 +65,7 @@ export default function Fit30DayCounter({
         className={`rounded-full px-3 py-1 text-xs font-medium ${
           result.status === 'active'
             ? 'bg-green-100 text-green-800'
-            : result.status === 'reintro'
+            : result.status === 'recharge'
             ? 'bg-blue-100 text-blue-800'
             : result.status === 'completed'
             ? 'bg-indigo-100 text-indigo-800'
